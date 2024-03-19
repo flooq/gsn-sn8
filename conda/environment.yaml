@@ -1,0 +1,23 @@
+name: gsn-sn8
+channels:
+  - pytorch
+  - nvidia
+dependencies:
+  - pip
+  - pytorch
+  - torchvision
+  - torchaudio
+  - pytorch-cuda=12.1
+  - scikit-image
+  - fiona
+  - shapely
+  - geojson
+  - utm
+  - osmnx
+  - statsmodels
+  - geopandas
+  - jupyter
+  - plotly
+  - matplotlib
+  - pip:
+      - opencv-python

@@ -1,0 +1,12 @@
+# horovod and pygdal seem not be used and cause a lot of problems.
+# That's why they have been removed from dependencies list.
+#pygdal==3.0.4.10
+#horovod==0.24.3
+scikit-image==0.19.2
+Fiona==1.8.21
+Shapely==1.8.2
+geojson==2.5.0
+utm==0.7.0
+osmnx==1.1.2
+statsmodels==0.13.2
+geopandas==0.10.2
