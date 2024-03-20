@@ -34,13 +34,15 @@ There are 2 preferred ways to build and run this project:
 
 ### Conda
 
-`sudo apt-get install postgresql-client libpq-dev gdal-bin libgdal-dev curl -y`
+1. There is a command in provided baseline Dockerfile 
+`apt-get install postgresql-client libpq-dev gdal-bin libgdal-dev curl -y`
+Install if needed
 
-1. Create environment gsn-sn8
+2. Create environment gsn-sn8
 `./conda/create.sh`
 
-2. Activate environment
+3. Activate environment
 `conda activate gsn-sn8`
 
-3. (optional) Install kernel for jupyter notebook
+4. (optional) Install kernel for jupyter notebook
 `python -m ipykernel install --user --name gsn-sn8 --display-name "Deep neural networks: postgraduate studies"`
