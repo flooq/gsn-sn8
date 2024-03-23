@@ -15,12 +15,9 @@ Created on Tue Feb 12 11:04:33 2019
 """
 
 import os
-import sys
-import cv2
 import csv
 import time
 import shapely
-import logging
 import skimage.io
 import numpy as np
 import osmnx as ox
@@ -31,16 +28,13 @@ from statsmodels.stats.weightstats import DescrStatsW
 import matplotlib
 # if in docker, the line below is necessary
 matplotlib.use('agg')
-from matplotlib import collections as mpl_collections
-import matplotlib.pyplot as plt
 #from configs.config import Config
 import argparse
-import json
 from multiprocessing.pool import Pool
 
 
-from utils import make_logger
-from utils import apls_plots
+from code.utils.utils import make_logger
+from code.utils.utils import apls_plots
 
 logger1 = None
 

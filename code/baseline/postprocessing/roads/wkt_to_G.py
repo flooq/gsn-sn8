@@ -28,16 +28,13 @@ import networkx as nx
 import osmnx as ox
 from osgeo import gdal, ogr, osr
 import argparse
-import json
 import pandas as pd
 import numpy as np
 import time
-import matplotlib.pyplot as plt
-import logging
 from multiprocessing.pool import Pool
 
 # import cv2
-from utils import make_logger, rdp
+from code.utils.utils import make_logger, rdp
 
 def parse_args():
     parser = argparse.ArgumentParser()

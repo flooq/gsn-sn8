@@ -5,12 +5,16 @@ Detecting flooded roads and buildings.
 
 ## Dataset
 
-The data is hosted on AWS. Download and unzip dataset to $HOME/.spacenet8 directory.
+The data is hosted on AWS. Download and unzip dataset to inputs directory.
 
-`./scripts/prepare_dataset.sh`
+`python prepare_dataset.py`
 
 In case, you need a fresh dataset later, run this script again. 
 It should be refreshed fast as data will not be downloaded from AWS again. 
+
+In case, you need to download tarballs from AWS only then run  
+
+`python aws_tarballs.py`
 
 ## Setup
 There are 2 preferred ways to build and run this project:  
@@ -34,15 +38,64 @@ There are 2 preferred ways to build and run this project:
 
 ### Conda
 
-1. There is a command in provided baseline Dockerfile 
+1. There is a command in provided baseline Dockerfile (install if needed)
 `apt-get install postgresql-client libpq-dev gdal-bin libgdal-dev curl -y`
-Install if needed
 
 2. Create environment gsn-sn8
-`./conda/create.sh`
+
+   `./conda/create.sh`
 
 3. Activate environment
-`conda activate gsn-sn8`
+
+   `conda activate gsn-sn8`
 
 4. (optional) Install kernel for jupyter notebook
-`python -m ipykernel install --user --name gsn-sn8 --display-name "Deep neural networks: postgraduate studies"`
+
+   `python -m ipykernel install --user --name gsn-sn8 --display-name "Deep neural networks: postgraduate studies"`
+
+### Baseline runner
+
+Hydra framework has been used to run experiments.
+Hydra configuration is located in code/baseline_runner/conf 
+
+#### Preprocess dataset
+Run once for all experiments. 
+It creates directories 'prepped_cleaned' and 'masks' in each 'aoi_dir' directory.
+
+ `python code/baseline_runner/preprocess.py`
+
+#### Train network
+
+Examples:
+1. Train foundation network
+
+    `python code/baseline_runner/train_foundation.py`
+
+2. Train flood network
+
+   `python code/baseline_runner/train_flood.py`
+
+3. Train foundation & flood network
+
+   `python code/baseline_runner/train_all.py`
+
+4. Train with overridden values
+ 
+   `python code/baseline_runner/train_foundation.py foundation=unet`
+
+   `python code/baseline_runner/train_all.py foundation=unet flood=unet_siamese`
+
+5. Eval - not moved yet to hydra. For now:
+    
+Foundation eval
+
+   `python code/baseline/foundation_eval.py  --model_path inputs/.../best_model.pth  --in_csv inputs/.../sn8_data_val.csv  --save_preds_dir .. --model_name resnet34`
+
+   `python code/baseline/foundation_eval.py  --model_path inputs/.../best_model.pth  --in_csv inputs/.../sn8_data_val.csv  --save_fig_dir  .. --model_name resnet34`
+
+Flood eval
+
+    `python code/baseline/flood_eval.py  --model_path inputs/.../best_model.pth --in_csv inputs/.../sn8_data_val.csv  --save_preds_dir .. --gpu 0 --model_name resnet34_siamese`
+
+    `python baseline/flood_eval.py  --model_path inputs/.../best_model.pth --in_csv inputs/.../sn8_data_val.csv  --save_fig_dir .. --gpu 0 --model_name resnet34_siamese`
+

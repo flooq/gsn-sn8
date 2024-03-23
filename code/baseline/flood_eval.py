@@ -1,5 +1,4 @@
 import os
-import time
 import argparse
 
 from osgeo import gdal
@@ -8,12 +7,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import colors
 import torch
-import torch.nn as nn
 
 import models.pytorch_zoo.unet as unet
 from datasets.datasets import SN8Dataset
 from models.other.unet import UNetSiamese
-from utils.utils import write_geotiff
+from code.utils.utils import write_geotiff
 
 def parse_args():
     parser = argparse.ArgumentParser()

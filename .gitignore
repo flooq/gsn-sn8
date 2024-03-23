@@ -20,3 +20,6 @@ ipython_config.py
 *.iws
 *.ipr
 
+inputs/
+outputs/
+

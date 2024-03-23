@@ -1,26 +1,16 @@
-import argparse
-
-from skimage.morphology import skeletonize, remove_small_objects, remove_small_holes, medial_axis
-from skimage.morphology import erosion, dilation, opening, closing, disk
+from skimage.morphology import skeletonize, remove_small_objects, remove_small_holes
 import numpy as np
-from scipy import ndimage as ndi
-from matplotlib.pylab import plt
 import os
 import pandas as pd
 from itertools import tee
 from scipy.spatial.distance import pdist, squareform
 from collections import OrderedDict #, defaultdict
-import json
 import time
-import random
 import argparse
 import networkx as nx
-import logging
-from multiprocessing.pool import Pool
 import skimage
 import skimage.draw
-import scipy.spatial
-import skimage.io 
+import skimage.io
 import cv2
 import glob
 
@@ -28,7 +18,7 @@ from osgeo import gdal
 from osgeo import osr
 from osgeo import ogr
 
-from utils import sknw, sknw_int64
+from code.utils.utils import sknw, sknw_int64
 
 linestring = "LINESTRING {}"
 
