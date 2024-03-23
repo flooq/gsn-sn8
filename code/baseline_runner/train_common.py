@@ -31,9 +31,11 @@ def split_train_val_dataset(cfg: DictConfig):
 
 
 def train(cfg: DictConfig, network, script):
-    # required for flood network when run from Intellij Idea with conda environment
-    os.environ['GDAL_DATA'] = cfg['env']['GDAL_DATA']
-    os.environ['PROJ_LIB'] = cfg['env']['PROJ_LIB']
+    if cfg.enable_env:
+        print(f"Setting GDAL_DATA & PROJ_LIB environment variables")
+        # required for flood network when run from Intellij Idea with conda environment
+        os.environ['GDAL_DATA'] = cfg['env']['GDAL_DATA']
+        os.environ['PROJ_LIB'] = cfg['env']['PROJ_LIB']
 
     network_capitalize = network.capitalize()
     print("==================================================================================")

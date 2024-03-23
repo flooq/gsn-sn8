@@ -15,7 +15,6 @@ if [ ! -d "$DATA_DIR" ]; then
 fi
 
 docker run --runtime nvidia --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 -it --rm \
-	-v "${PROJ_DIR}":/work \
-	-v "${DATA_DIR}":/data \
+	-v "${PROJ_DIR}":/gsn-sn8 \
 	--name ${CONTAINER} \
 	${IMAGE} /bin/bash

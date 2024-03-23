@@ -18,9 +18,11 @@ def preprocess():
     with open(os.path.join(utils.baseline_runner_directory(), "conf", "config.yaml"), "r") as yaml_file:
         cfg = yaml.load(yaml_file, Loader=yaml.FullLoader)
 
-    # required for create_masks when run from Intellij Idea with conda environment
-    os.environ['GDAL_DATA'] = cfg['env']['GDAL_DATA']
-    os.environ['PROJ_LIB'] = cfg['env']['PROJ_LIB']
+    if cfg['enable_env']:
+        print(f"Setting GDAL_DATA & PROJ_LIB environment variables")
+        # required for create_masks when run from Intellij Idea with conda environment
+        os.environ['GDAL_DATA'] = cfg['env']['GDAL_DATA']
+        os.environ['PROJ_LIB'] = cfg['env']['PROJ_LIB']
 
     dataset_dir = ["--root_dir", utils.dataset_directory()]
     aoi_dirs = ["--aoi_dirs"] + cfg['aoi_dirs']

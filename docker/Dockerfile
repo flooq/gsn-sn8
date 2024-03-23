@@ -9,3 +9,6 @@ WORKDIR /tmp
 COPY requirements.txt .
 
 RUN set -eux && pip install --upgrade pip && pip install --no-cache-dir -r /tmp/requirements.txt
+
+WORKDIR /gsn-sn8
+
