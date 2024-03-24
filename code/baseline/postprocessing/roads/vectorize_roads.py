@@ -18,7 +18,7 @@ from osgeo import gdal
 from osgeo import osr
 from osgeo import ogr
 
-from code.utils.utils import sknw, sknw_int64
+from utils import sknw, sknw_int64
 
 linestring = "LINESTRING {}"
 

@@ -11,7 +11,7 @@ import torch
 import models.pytorch_zoo.unet as unet
 from models.other.unet import UNet
 from datasets.datasets import SN8Dataset
-from code.utils.utils import write_geotiff
+from utils.utils import write_geotiff
 
 def parse_args():
     parser = argparse.ArgumentParser()

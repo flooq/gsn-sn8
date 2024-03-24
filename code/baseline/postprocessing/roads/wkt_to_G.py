@@ -34,7 +34,7 @@ import time
 from multiprocessing.pool import Pool
 
 # import cv2
-from code.utils.utils import make_logger, rdp
+from utils import make_logger, rdp
 
 def parse_args():
     parser = argparse.ArgumentParser()

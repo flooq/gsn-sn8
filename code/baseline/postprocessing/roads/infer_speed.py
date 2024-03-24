@@ -33,8 +33,8 @@ import argparse
 from multiprocessing.pool import Pool
 
 
-from code.utils.utils import make_logger
-from code.utils.utils import apls_plots
+from utils import make_logger
+from utils import apls_plots
 
 logger1 = None
 

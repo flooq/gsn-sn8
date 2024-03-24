@@ -5,7 +5,7 @@ defaults:
 
 hydra:
   run:
-    dir: ../outputs/${hydra.job.name}/${now:%Y-%m-%d_%H-%M-%S}
+    dir: ${oc.env:GSN_SN8_DIR}/outputs/${hydra.job.name}/${now:%Y-%m-%d_%H-%M-%S}
 
 # aoi = area of interest
 aoi_dirs:
@@ -15,12 +15,3 @@ aoi_dirs:
 output_dir: ${hydra:runtime.output_dir}
 output_csv_basename: 'sn8_data'
 val_percent: '0.15'
-
-
-# required for create_masks when run from Intellij Idea & conda env
-# otherwise can be ignored
-# see issue https://github.com/PDAL/PDAL/issues/2544
-enable_env: false  # true
-env:
-  GDAL_DATA: /home/pawel/anaconda3/envs/gsn-sn8/share/gdal
-  PROJ_LIB: /home/pawel/anaconda3/envs/gsn-sn8/share/proj

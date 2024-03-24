@@ -1,7 +1,7 @@
 import hydra
 from omegaconf import DictConfig
 
-from train_common import train, split_train_val_dataset
+from common import train, split_train_val_dataset
 
 
 @hydra.main(version_base=None, config_path="conf", config_name="config")
