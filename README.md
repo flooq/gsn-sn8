@@ -33,8 +33,7 @@ There are 2 preferred ways to build and run this project:
 `./docker/run.sh`
 
     Mounted volumes:
-   - /work - this project repository
-   - /data - local $HOME/.spacenet8/dataset
+   - /gsn-sn8 - this project repository with dataset inside
 
 ### Conda
 
