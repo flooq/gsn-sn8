@@ -6,19 +6,13 @@ from preprocess import preprocess_cfg
 
 
 @hydra.main(version_base=None, config_path="conf", config_name="config")
-def run_all(cfg: DictConfig) -> None:
-    # not necessary to run it all the time, should be run once
+def run_flood_all(cfg: DictConfig) -> None:
     preprocess_cfg(cfg)
 
     split_train_val_dataset(cfg)
-    train(cfg, "foundation", "train_foundation_features.py")
     train(cfg, "flood", "train_flood.py")
 
-    latest = get_latest_hydra_job_execution(["run_all"])
-    eval(cfg,
-         network="foundation",
-         script="foundation_eval.py",
-         output_train_dir=latest)
+    latest = get_latest_hydra_job_execution(["run_flood_all"])
     eval(cfg,
          network="flood",
          script="flood_eval.py",
@@ -26,4 +20,4 @@ def run_all(cfg: DictConfig) -> None:
 
 
 if __name__ == "__main__":
-    run_all()
+    run_flood_all()

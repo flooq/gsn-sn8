@@ -149,7 +149,7 @@ def get_latest_hydra_job_execution(job_names):
             all_directories.extend(directories)
 
     if not all_directories:
-        raise Exception(f"No directories found for given job ${job_names}.")
+        raise Exception(f"No directories found for given job {job_names}.")
 
     latest_directory = max(all_directories, key=lambda x: datetime.strptime(os.path.basename(x), '%Y-%m-%d_%H-%M-%S'))
 

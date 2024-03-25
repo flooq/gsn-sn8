@@ -64,7 +64,13 @@ It creates directories 'prepped_cleaned' and 'masks' in each 'aoi_dir' directory
 
  `python code/baseline_runner/preprocess.py`
 
-#### Train network
+#### Environment variables
+
+'GSN_SN8_DIR' environment variable is set to project repository.
+
+It might be necessary to set PROJ_LIB env variable. See code/gsn_sn8.py
+
+#### Train and inference network
 
 Examples:
 1. Train foundation network
@@ -85,17 +91,15 @@ Examples:
 
    `python code/baseline_runner/train_all.py foundation=unet flood=unet_siamese`
 
-5. Eval - not moved yet to hydra. For now:
-    
-Foundation eval
+5. Foundation eval with latest train execution
 
-   `python code/baseline/foundation_eval.py  --model_path inputs/.../best_model.pth  --in_csv inputs/.../sn8_data_val.csv  --save_preds_dir .. --model_name resnet34`
+   `python code/baseline/eval_foundation.py`
 
-   `python code/baseline/foundation_eval.py  --model_path inputs/.../best_model.pth  --in_csv inputs/.../sn8_data_val.csv  --save_fig_dir  .. --model_name resnet34`
+6. Flood eval with latest train execution
 
-Flood eval
+   `python code/baseline/eval_flood.py`
 
-    `python code/baseline/flood_eval.py  --model_path inputs/.../best_model.pth --in_csv inputs/.../sn8_data_val.csv  --save_preds_dir .. --gpu 0 --model_name resnet34_siamese`
+7. Run all (preprocess, train and eval)
 
-    `python baseline/flood_eval.py  --model_path inputs/.../best_model.pth --in_csv inputs/.../sn8_data_val.csv  --save_fig_dir .. --gpu 0 --model_name resnet34_siamese`
+   `python code/baseline/run_all.py`
 
