@@ -2,7 +2,7 @@ import csv
 import copy
 from typing import List, Tuple
 
-from osgeo import gdal
+from PIL import Image
 import numpy as np
 import torch
 from torch.utils.data import Dataset
@@ -59,12 +59,10 @@ class SN8Dataset(Dataset):
             filepath = data_dict[i]
             if filepath is not None:
                 # need to resample postimg to same spatial resolution/extent as preimg and labels.
+                ds = Image.open(filepath)
                 if i == "postimg":
-                    ds = self.get_warped_ds(data_dict["postimg"])
-                else:
-                    ds = gdal.Open(filepath)
-                image = ds.ReadAsArray()
-                ds = None
+                    ds = ds.resize(size=(self.img_size[1], self.img_size[0]), resample=Image.BILINEAR)
+                image = np.array(ds)
                 if len(image.shape)==2: # add a channel axis if read image is only shape (H,W).
                     returned_data.append(torch.unsqueeze(torch.from_numpy(image), dim=0).float())
                 else:
@@ -78,15 +76,3 @@ class SN8Dataset(Dataset):
         """ return pre-event image absolute filepath at index """
         data_dict = self.files[index]
         return data_dict["preimg"]
-
-    def get_warped_ds(self, post_image_filename: str) -> gdal.Dataset:
-        """ gdal warps (resamples) the post-event image to the same spatial resolution as the pre-event image and masks 
-        
-        SN8 labels are created from referencing pre-event image. Spatial resolution of the post-event image does not match the spatial resolution of the pre-event imagery and therefore the labels.
-        In order to align the post-event image with the pre-event image and mask labels, we must resample the post-event image to the resolution of the pre-event image. Also need to make sure
-        the post-event image covers the exact same spatial extent as the pre-event image. this is taken care of in the the tiling"""
-        ds = gdal.Warp("", post_image_filename,
-                       format='MEM', width=self.img_size[1], height=self.img_size[0],
-                       resampleAlg=gdal.GRIORA_Bilinear,
-                       outputType=gdal.GDT_Byte)
-        return ds
