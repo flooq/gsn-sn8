@@ -38,7 +38,7 @@ There are 2 preferred ways to build and run this project:
 ### Conda
 
 1. There is a command in provided baseline Dockerfile (install if needed)
-`apt-get install postgresql-client libpq-dev gdal-bin libgdal-dev curl -y`
+`apt-get install libpq-dev gdal-bin libgdal-dev -y`
 
 2. Create environment gsn-sn8
 
@@ -92,13 +92,13 @@ Examples:
 
 5. Foundation eval with latest train execution
 
-   `python code/baseline/eval_foundation.py`
+   `python code/baseline_runner/eval_foundation.py`
 
 6. Flood eval with latest train execution
 
-   `python code/baseline/eval_flood.py`
+   `python code/baseline_runner/eval_flood.py`
 
 7. Run all (preprocess, train and eval)
 
-   `python code/baseline/run_all.py`
+   `python code/baseline_runner/run_all.py`
 
