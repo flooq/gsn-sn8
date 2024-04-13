@@ -1,14 +1,9 @@
-import sys
-
 from omegaconf import DictConfig
 import subprocess
 import os
 import time
-from pathlib import Path
 from datetime import datetime
-
-sys.path.append(str(Path(__file__).resolve().parent.parent))
-import gsn_sn8
+import env
 
 
 def split_train_val_dataset(cfg: DictConfig):
@@ -17,8 +12,8 @@ def split_train_val_dataset(cfg: DictConfig):
     print(f"Area of interests (AOI):")
     for aoi in cfg.aoi_dirs:
         print(f"\t{aoi}")
-    baseline_directory = gsn_sn8.baseline_directory()
-    dataset_dir = ["--root_dir", gsn_sn8.dataset_directory()]
+    baseline_directory = env.baseline_directory()
+    dataset_dir = ["--root_dir", env.dataset_directory()]
     aoi_dirs = ["--aoi_dirs"] + cfg.aoi_dirs
     out_csv_basename = ["--out_csv_basename", cfg.output_csv_basename]
     val_percent = ["--val_percent", cfg.val_percent]
@@ -50,7 +45,7 @@ def train(cfg: DictConfig, network, script):
     batch_size = ["--batch_size", cfg[network].batch_size]
     gpu = ["--gpu", cfg[network].gpu]
     # train_network
-    baseline_directory = gsn_sn8.baseline_directory()
+    baseline_directory = env.baseline_directory()
     train_network = ["python", os.path.join(baseline_directory, script)]
     train_network_args = (train_csv + val_csv + save_dir +
                           model_name + learning_rate + epochs + batch_size + gpu)
@@ -83,7 +78,7 @@ def eval(cfg: DictConfig, network: str, script: str, output_train_dir: str):
     model_name = ["--model_name", cfg[network].model]
     gpu = ["--gpu", cfg[network].gpu]
 
-    baseline_directory = gsn_sn8.baseline_directory()
+    baseline_directory = env.baseline_directory()
     eval_network = ["python", os.path.join(baseline_directory, script)]
     eval_network_common_args = model_path + val_csv + model_name + gpu
 
@@ -141,7 +136,7 @@ def get_subdirectory_name(directory_path):
 def get_latest_hydra_job_execution(job_names):
     all_directories = []
 
-    outputs_dir = gsn_sn8.outputs_directory()
+    outputs_dir = env.outputs_directory()
     for job_name in job_names:
         directory_path = os.path.join(outputs_dir, job_name)
         if os.path.isdir(directory_path):

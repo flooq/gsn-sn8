@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-project_directory = str(Path(__file__).resolve().parent.parent)
+project_directory = str(Path(__file__).resolve().parent.parent.parent)
 os.environ['GSN_SN8_DIR'] = project_directory
 print(f"Setting environment variable GSN_SN8_DIR={os.environ['GSN_SN8_DIR']}")
 
