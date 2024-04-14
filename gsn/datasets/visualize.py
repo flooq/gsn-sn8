@@ -31,12 +31,13 @@ def draw_postimage(img, flood, road, building):
 @click.command()
 @click.option("--data_csv", type=click.Path(exists=True), required=True)
 @click.option("--output_dir", type=click.Path(), required=True)
-@click.option("--n_images", type=int, default=5)
-def main(data_csv, output_dir, n_images, randomize=True):
+@click.option("--n_images", type=int, default=5)  # set n_images to a large number to visualize all images
+@click.option("--randomize/--first", type=bool, default=True)
+def main(data_csv, output_dir, n_images, randomize):
     dataset = SN8Dataset(data_csv, data_to_load=["preimg","postimg","building","road","flood"])
     os.makedirs(output_dir, exist_ok=True)
+    n_images = max(n_images, len(dataset))
     idx = random.choices(range(len(dataset)), k=n_images) if randomize else range(n_images)
-    flood_idx = 2
     for i in idx:
         try:
             preimg, postimg, building, road, roadspeed, flood = dataset[i] # roadspeed=0
