@@ -7,9 +7,12 @@ import torch
 import torch.nn as nn
 import numpy as np
 import torch.nn.functional as F
+import pytorch_lightning as pl
 
-from datasets.datasets import SN8Dataset
-from core.losses import focal, soft_dice_loss
+from gsn.datasets.datasets import SN8Dataset
+# from core.losses import focal, soft_dice_loss
+
+from models.baseline_unet import UNet
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -51,65 +54,10 @@ def save_model_checkpoint(model, checkpoint_model_path):
     torch.save(model.state_dict(), checkpoint_model_path)
 
 def train(model, train_dataloader, val_dataloader):
-    pass
+    trainer = pl.Trainer(
 
-if __name__ == "__main__":
-    args = parse_args()
-    train_csv = args.train_csv
-    val_csv = args.val_csv
-    save_dir = args.save_dir
-    model_name = args.model_name
-    initial_lr = args.lr
-    batch_size = args.batch_size
-    n_epochs = args.n_epochs
-    gpu = args.gpu
-
-    now = datetime.now() 
-    date_total = str(now.strftime("%d-%m-%Y-%H-%M"))
-    
-    img_size = (1300,1300)
-    
-    soft_dice_loss_weight = 0.25 # road loss
-    focal_loss_weight = 0.75 # road loss
-    road_loss_weight = 0.5
-    building_loss_weight = 0.5
-
-    os.environ['CUDA_VISIBLE_DEVICES'] = str(gpu)
-
-    SEED=12
-    torch.manual_seed(SEED)
-
-    assert(os.path.exists(save_dir))
-    save_dir = os.path.join(save_dir, f"{model_name}_lr{'{:.2e}'.format(initial_lr)}_bs{batch_size}_{date_total}")
-    if not os.path.exists(save_dir):
-        os.mkdir(save_dir)
-        os.chmod(save_dir, 0o777)
-    checkpoint_model_path = os.path.join(save_dir, "model_checkpoint.pth")
-    best_model_path = os.path.join(save_dir, "best_model.pth")
-    training_log_csv = os.path.join(save_dir, "log.csv")
-
-    # init the training log
-    with open(training_log_csv, 'w', newline='') as csvfile:
-        fieldnames = ['epoch', 'lr', 'train_tot_loss', 'train_bce', 'train_dice', 'train_focal', 'train_road_loss',
-                                     'val_tot_loss', 'val_bce', 'val_dice', 'val_focal', 'val_road_loss']
-        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-        writer.writeheader()
-
-    train_dataset = SN8Dataset(train_csv,
-                            data_to_load=["preimg","building","roadspeed"],
-                            img_size=img_size)
-    train_dataloader = torch.utils.data.DataLoader(train_dataset, shuffle=True, num_workers=4, batch_size=batch_size)
-    val_dataset = SN8Dataset(val_csv,
-                            data_to_load=["preimg","building","roadspeed"],
-                            img_size=img_size)
-    val_dataloader = torch.utils.data.DataLoader(val_dataset, num_workers=4, batch_size=batch_size)
-
-    #model = models["resnet34"](num_classes=[1, 8], num_channels=3)
-    if model_name == "unet":
-        model = UNet(3, [1,8], bilinear=True)
-    else:
-        model = models[model_name](num_classes=[1, 8], num_channels=3)
-    
+    )
+    trainer.fit(model, train_dataloader, val_dataloader)
     model.cuda()
     optimizer = torch.optim.Adam(model.parameters(), lr=initial_lr)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=40, gamma=0.5)
@@ -147,7 +95,7 @@ if __name__ == "__main__":
             building_loss = bce_l
             loss = road_loss_weight * road_loss + building_loss_weight * building_loss
 
-            train_loss_val+=loss
+            train_loss_val += loss
             train_focal_loss += focal_l
             train_soft_dice_loss += dice_soft_l
             train_bce_loss += bce_l
@@ -155,19 +103,82 @@ if __name__ == "__main__":
             loss.backward()
             optimizer.step()
 
-            print(f"    {str(np.round(i/len(train_dataloader)*100,2))}%: TRAIN LOSS: {(train_loss_val*1.0/(i+1)).item()}", end="\r")
+            print(
+                f"    {str(np.round(i / len(train_dataloader) * 100, 2))}%: TRAIN LOSS: {(train_loss_val * 1.0 / (i + 1)).item()}",
+                end="\r")
         print()
-        train_tot_loss = (train_loss_val*1.0/len(train_dataloader)).item()
-        train_tot_focal = (train_focal_loss*1.0/len(train_dataloader)).item()
-        train_tot_dice = (train_soft_dice_loss*1.0/len(train_dataloader)).item()
-        train_tot_bce = (train_bce_loss*1.0/len(train_dataloader)).item()
-        train_tot_road_loss = (train_road_loss*1.0/len(train_dataloader)).item()
+        train_tot_loss = (train_loss_val * 1.0 / len(train_dataloader)).item()
+        train_tot_focal = (train_focal_loss * 1.0 / len(train_dataloader)).item()
+        train_tot_dice = (train_soft_dice_loss * 1.0 / len(train_dataloader)).item()
+        train_tot_bce = (train_bce_loss * 1.0 / len(train_dataloader)).item()
+        train_tot_road_loss = (train_road_loss * 1.0 / len(train_dataloader)).item()
         current_lr = scheduler.get_last_lr()[0]
         scheduler.step()
-        train_metrics = {"lr":current_lr, "train_tot_loss":train_tot_loss,
-                         "train_bce":train_tot_bce, "train_focal":train_tot_focal,
-                         "train_dice":train_tot_dice, "train_road_loss":train_tot_road_loss}
+        train_metrics = {"lr": current_lr, "train_tot_loss": train_tot_loss,
+                         "train_bce": train_tot_bce, "train_focal": train_tot_focal,
+                         "train_dice": train_tot_dice, "train_road_loss": train_tot_road_loss}
 
+
+if __name__ == "__main__":
+    args = parse_args()
+    train_csv = args.train_csv
+    val_csv = args.val_csv
+    save_dir = args.save_dir
+    model_name = args.model_name
+    initial_lr = args.lr
+    batch_size = args.batch_size
+    n_epochs = args.n_epochs
+    gpu = args.gpu
+
+    now = datetime.now() 
+    date_total = str(now.strftime("%d-%m-%Y-%H-%M"))
+    
+    img_size = (1300, 1300)
+    
+    soft_dice_loss_weight = 0.25 # road loss
+    focal_loss_weight = 0.75 # road loss
+    road_loss_weight = 0.5
+    building_loss_weight = 0.5
+
+    os.environ['CUDA_VISIBLE_DEVICES'] = str(gpu)
+
+    SEED=12
+    torch.manual_seed(SEED)
+
+    assert(os.path.exists(save_dir))
+    save_dir = os.path.join(save_dir, f"{model_name}_lr{'{:.2e}'.format(initial_lr)}_bs{batch_size}_{date_total}")
+    if not os.path.exists(save_dir):
+        os.mkdir(save_dir)
+        os.chmod(save_dir, 0o777)
+    checkpoint_model_path = os.path.join(save_dir, "model_checkpoint.pth")
+    best_model_path = os.path.join(save_dir, "best_model.pth")
+    training_log_csv = os.path.join(save_dir, "log.csv")
+
+    # init the training log
+    with open(training_log_csv, 'w', newline='') as csvfile:
+        fieldnames = ['epoch', 'lr', 'train_tot_loss', 'train_bce', 'train_dice', 'train_focal', 'train_road_loss',
+                                     'val_tot_loss', 'val_bce', 'val_dice', 'val_focal', 'val_road_loss']
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        writer.writeheader()
+
+    train_dataset = SN8Dataset(train_csv,
+                            data_to_load=["preimg","building","roadspeed"],
+                            img_size=img_size)
+    train_dataloader = torch.utils.data.DataLoader(train_dataset, shuffle=True, num_workers=4, batch_size=batch_size)
+    val_dataset = SN8Dataset(val_csv,
+                            data_to_load=["preimg","building","roadspeed"],
+                            img_size=img_size)
+    val_dataloader = torch.utils.data.DataLoader(val_dataset, num_workers=4, batch_size=batch_size)
+
+    model = UNet(3, [1, 8], bilinear=True)
+    model.cuda()
+    trainer = pl.Trainer(
+
+    )
+    trainer.fit(model, train_dataloader, val_dataloader)
+    
+
+"""
         # validation
         model.eval()
         val_loss_val = 0
@@ -219,3 +230,4 @@ if __name__ == "__main__":
             print(f"    loss improved from {np.round(best_loss, 6)} to {np.round(epoch_val_loss, 6)}. saving best model...")
             best_loss = epoch_val_loss
             save_model_checkpoint(model, best_model_path)
+"""
