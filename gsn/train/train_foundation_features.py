@@ -9,10 +9,10 @@ import numpy as np
 import torch.nn.functional as F
 import pytorch_lightning as pl
 
+from gsn.models.baseline_unet import UNet
 from gsn.datasets.datasets import SN8Dataset
 # from core.losses import focal, soft_dice_loss
 
-from models.baseline_unet import UNet
 
 def parse_args():
     parser = argparse.ArgumentParser()
