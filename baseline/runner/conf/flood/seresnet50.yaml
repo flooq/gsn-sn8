@@ -1,5 +1,5 @@
 model: seresnet50
 learning_rate: '0.0001'
-epochs: '1'
+epochs: '10'
 batch_size: '2'
 gpu: '0'
