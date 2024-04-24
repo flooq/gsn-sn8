@@ -86,13 +86,11 @@ def eval(cfg: DictConfig, network: str, script: str, output_train_dir: str):
     os.makedirs(network_eval_preds_dir, exist_ok=True)
     print('save_preds_dir', network_eval_preds_dir)
     save_preds_dir = ["--save_preds_dir", network_eval_preds_dir]
-    subprocess.run(eval_network + eval_network_common_args + save_preds_dir)
-
     network_eval_fig_dir = os.path.join(cfg.output_dir, network + "_eval_fig")
     os.makedirs(network_eval_fig_dir, exist_ok=True)
     print('save_fig_dir', network_eval_fig_dir)
     save_fig_dir = ["--save_fig_dir", network_eval_fig_dir]
-    subprocess.run(eval_network + eval_network_common_args + save_fig_dir)
+    subprocess.run(eval_network + eval_network_common_args + save_preds_dir + save_fig_dir)
 
     end_time = time.time()
     elapsed_time = end_time - start_time
@@ -103,7 +101,7 @@ def print_start_message(cfg, network, action):
     network_capitalize = network.capitalize()
     print("==================================================================================")
     print(f"{network_capitalize} network with model {cfg[network].model} {action} started...")
-    print(f"Parameters used for eval:")
+    print(f"Parameters used:")
     for key, value in cfg[network].items():
         print(f"\t{key}: {value}")
 
