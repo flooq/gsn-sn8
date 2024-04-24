@@ -67,7 +67,7 @@ class SN8Dataset(Dataset):
                     ds = ds.resize(size=(self.img_size[1], self.img_size[0]), resample=Image.BILINEAR)
                 image = np.array(ds)
                 if not self.channel_last and len(image.shape)==3:
-                    image = np.transpose(image, (2, 0, 1))
+                    image = np.moveaxis(image, -1, 0)
                 if len(image.shape)==2: # add a channel axis if read image is only shape (H,W).
                     returned_data.append(torch.unsqueeze(torch.from_numpy(image), dim=0).float())
                 else:
