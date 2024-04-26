@@ -1,0 +1,19 @@
+hydra:
+  run:
+    dir: ${oc.env:GSN_SN8_DIR}/outputs/${hydra.job.name}/${now:%Y-%m-%d_%H-%M-%S}
+
+# aoi = area of interest
+aoi_dirs:
+  - 'Germany_Training_Public'
+  - 'Louisiana-East_Training_Public'
+
+network:
+  model: unet_siamese
+  learning_rate: '0.0001'
+  epochs: '1'
+  batch_size: '1'
+  gpu: '0'
+
+output_dir: ${hydra:runtime.output_dir}
+output_csv_basename: 'sn8_data'
+val_percent: '0.15'
