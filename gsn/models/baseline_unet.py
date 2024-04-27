@@ -114,7 +114,6 @@ class UNet(nn.Module):
             logits1 = self.outc1(x)
             logits2 = self.outc2(x)
             return logits1, logits2
-
 class UNetSiamese(nn.Module):
     def __init__(self, in_channels, n_classes, bilinear=True):
         super(UNetSiamese, self).__init__()

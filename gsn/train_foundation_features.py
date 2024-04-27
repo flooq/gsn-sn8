@@ -9,9 +9,8 @@ import numpy as np
 import torch.nn.functional as F
 import pytorch_lightning as pl
 
-from models.baseline_unet import UNet
+from models.baseline_unet import LightningUNet
 from datasets.datasets import SN8Dataset
-# from core.losses import focal, soft_dice_loss
 
 
 def parse_args():
@@ -53,71 +52,6 @@ def write_metrics_epoch(epoch, fieldnames, train_metrics, val_metrics, training_
 def save_model_checkpoint(model, checkpoint_model_path): 
     torch.save(model.state_dict(), checkpoint_model_path)
 
-def train(model, train_dataloader, val_dataloader):
-    trainer = pl.Trainer(
-
-    )
-    trainer.fit(model, train_dataloader, val_dataloader)
-    model.cuda()
-    optimizer = torch.optim.Adam(model.parameters(), lr=initial_lr)
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=40, gamma=0.5)
-    bceloss = nn.BCEWithLogitsLoss()
-
-    best_loss = np.inf
-    for epoch in range(n_epochs):
-        print(f"EPOCH {epoch}")
-
-        ### Training ##
-        model.train()
-        train_loss_val = 0
-        train_focal_loss = 0
-        train_soft_dice_loss = 0
-        train_bce_loss = 0
-        train_road_loss = 0
-        train_building_loss = 0
-        for i, data in enumerate(train_dataloader):
-            optimizer.zero_grad()
-
-            preimg, postimg, building, road, roadspeed, flood = data
-
-            preimg = preimg.cuda().float()
-            roadspeed = roadspeed.cuda().float()
-            building = building.cuda().float()
-
-            building_pred, road_pred = model(preimg)
-            bce_l = bceloss(building_pred, building)
-            y_pred = F.sigmoid(road_pred)
-
-            focal_l = focal(y_pred, roadspeed)
-            dice_soft_l = soft_dice_loss(y_pred, roadspeed)
-
-            road_loss = (focal_loss_weight * focal_l + soft_dice_loss_weight * dice_soft_l)
-            building_loss = bce_l
-            loss = road_loss_weight * road_loss + building_loss_weight * building_loss
-
-            train_loss_val += loss
-            train_focal_loss += focal_l
-            train_soft_dice_loss += dice_soft_l
-            train_bce_loss += bce_l
-            train_road_loss += road_loss
-            loss.backward()
-            optimizer.step()
-
-            print(
-                f"    {str(np.round(i / len(train_dataloader) * 100, 2))}%: TRAIN LOSS: {(train_loss_val * 1.0 / (i + 1)).item()}",
-                end="\r")
-        print()
-        train_tot_loss = (train_loss_val * 1.0 / len(train_dataloader)).item()
-        train_tot_focal = (train_focal_loss * 1.0 / len(train_dataloader)).item()
-        train_tot_dice = (train_soft_dice_loss * 1.0 / len(train_dataloader)).item()
-        train_tot_bce = (train_bce_loss * 1.0 / len(train_dataloader)).item()
-        train_tot_road_loss = (train_road_loss * 1.0 / len(train_dataloader)).item()
-        current_lr = scheduler.get_last_lr()[0]
-        scheduler.step()
-        train_metrics = {"lr": current_lr, "train_tot_loss": train_tot_loss,
-                         "train_bce": train_tot_bce, "train_focal": train_tot_focal,
-                         "train_dice": train_tot_dice, "train_road_loss": train_tot_road_loss}
-
 
 if __name__ == "__main__":
     args = parse_args()
@@ -134,11 +68,6 @@ if __name__ == "__main__":
     date_total = str(now.strftime("%d-%m-%Y-%H-%M"))
     
     img_size = (1300, 1300)
-    
-    soft_dice_loss_weight = 0.25 # road loss
-    focal_loss_weight = 0.75 # road loss
-    road_loss_weight = 0.5
-    building_loss_weight = 0.5
 
     os.environ['CUDA_VISIBLE_DEVICES'] = str(gpu)
 
@@ -170,8 +99,7 @@ if __name__ == "__main__":
                             img_size=img_size)
     val_dataloader = torch.utils.data.DataLoader(val_dataset, num_workers=4, batch_size=batch_size)
 
-    model = UNet(3, [1, 8], bilinear=True)
-    model.cuda()
+    model = LightningUNet(3, [1, 8], bilinear=True)
     trainer = pl.Trainer(
 
     )
