@@ -1,5 +1,5 @@
 # Upgraded version from 22 to 23 due to the lack of RTX4090 support
-FROM nvcr.io/nvidia/pytorch:23.03-py3
+FROM nvcr.io/nvidia/pytorch:22.03-py3
 MAINTAINER Jacob Arndt <arndtjw@ornl.gov>
 
 RUN apt-get update --fix-missing && DEBIAN_FRONTEND="noninteractive" TZ="America/New_York" apt-get install libpq-dev gdal-bin libgdal-dev -y
