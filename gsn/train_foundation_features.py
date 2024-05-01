@@ -9,7 +9,7 @@ import numpy as np
 import torch.nn.functional as F
 import pytorch_lightning as pl
 
-from models.baseline_unet import LightningUNet
+from models.lightning_unet import LightningUNet
 from datasets.datasets import SN8Dataset
 
 

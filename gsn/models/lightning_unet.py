@@ -3,8 +3,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 import pytorch_lightning as pl
 
-from baseline_unet import UNet
-from losses import focal, soft_dice_loss, focal_loss_weight, soft_dice_loss_weight, road_loss_weight, building_loss_weight
+from models.baseline_unet import UNet
+from models.losses import focal, soft_dice_loss, focal_loss_weight, soft_dice_loss_weight, road_loss_weight, building_loss_weight
 
 
 class LightningUNet(pl.LightningModule):
