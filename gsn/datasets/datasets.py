@@ -53,20 +53,24 @@ class SN8Dataset(Dataset):
 
     def __getitem__(self, index):
         data_dict = self.files[index]
-
+        
         returned_data = []
         for i in self.all_data_types:
             filepath = data_dict[i]
             if filepath is not None:
+                try:
                 # need to resample postimg to same spatial resolution/extent as preimg and labels.
-                ds = Image.open(filepath)
-                if i == "postimg":
-                    ds = ds.resize(size=(self.img_size[1], self.img_size[0]), resample=Image.BILINEAR)
-                image = np.array(ds)
-                if len(image.shape)==2: # add a channel axis if read image is only shape (H,W).
-                    returned_data.append(torch.unsqueeze(torch.from_numpy(image), dim=0).float())
-                else:
-                    returned_data.append(torch.from_numpy(image).float())
+                    ds = Image.open(filepath)
+                    if i == "postimg":
+                        ds = ds.resize(size=(self.img_size[1], self.img_size[0]), resample=Image.BILINEAR)
+                    image = np.array(ds)
+                    if len(image.shape)==2: # add a channel axis if read image is only shape (H,W).
+                        returned_data.append(torch.unsqueeze(torch.from_numpy(image), dim=0).float())
+                    else:
+                        returned_data.append(torch.from_numpy(image).float())
+                except:
+                    print(filepath)
+                    returned_data.append(0)
             else:
                 returned_data.append(0)
 
