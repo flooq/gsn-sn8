@@ -4,9 +4,6 @@ import argparse
 from datetime import datetime
 
 import torch
-import torch.nn as nn
-import numpy as np
-import torch.nn.functional as F
 import pytorch_lightning as pl
 
 from models.lightning_unet import LightningUNet
