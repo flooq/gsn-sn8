@@ -43,8 +43,7 @@ def flood_mask(flood, idx):
 @click.option("--randomize/--first", type=bool, default=False)
 def main(data_csv, output_dir, n_images, randomize):
     dataset = SN8Dataset(data_csv,
-                         data_to_load=["preimg","postimg","building","road","flood"],
-                         channel_last=False)
+                         data_to_load=["preimg","postimg","building","road","flood"])
     os.makedirs(output_dir, exist_ok=True)
     n_images = min(n_images, len(dataset))
     idx = random.choices(range(len(dataset)), k=n_images) if randomize else range(n_images)

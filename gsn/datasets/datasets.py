@@ -2,7 +2,7 @@ import csv
 import copy
 from typing import List, Tuple
 
-from PIL import Image
+from skimage import io, transform
 import numpy as np
 import torch
 from torch.utils.data import Dataset
@@ -12,7 +12,7 @@ class SN8Dataset(Dataset):
                  csv_filename: str,
                  data_to_load: List[str] = ["preimg","postimg","building","road","roadspeed","flood"],
                  img_size: Tuple[int, int] = (1300,1300),
-                 channel_last: bool = True):
+                 channel_last: bool = False):
         """ pytorch dataset for spacenet-8 data. loads images from a csv that contains filepaths to the images
 
         Parameters:
@@ -62,10 +62,11 @@ class SN8Dataset(Dataset):
             filepath = data_dict[i]
             if filepath is not None:
                 # need to resample postimg to same spatial resolution/extent as preimg and labels.
-                ds = Image.open(filepath)
+                image = io.imread(filepath)
                 if i == "postimg":
-                    ds = ds.resize(size=(self.img_size[1], self.img_size[0]), resample=Image.BILINEAR)
-                image = np.array(ds)
+                    # TODO check if is BILINEAR, required for flood
+                    transform.resize(image, (self.img_size[1], self.img_size[0]), anti_aliasing=True)
+
                 if not self.channel_last and len(image.shape)==3:
                     image = np.moveaxis(image, -1, 0)
                 if len(image.shape)==2: # add a channel axis if read image is only shape (H,W).

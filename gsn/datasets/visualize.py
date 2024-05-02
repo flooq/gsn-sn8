@@ -44,6 +44,11 @@ def main(data_csv, output_dir, n_images, randomize):
         except Exception:
             print('File not found')
             continue
+
+        if len(preimg.shape)==3:
+            preimg = torch.permute(preimg, (1, 2, 0))
+            postimg = torch.permute(postimg, (1, 2, 0))
+
         road = torch.squeeze(road).numpy().astype(bool)
         building = torch.squeeze(building).numpy().astype(bool)
         # flood = flood.numpy()[:, :, flood_idx].astype(bool)
