@@ -38,4 +38,4 @@ def dataset_directory():
 
 
 def outputs_directory():
-    return os.path.join(project_directory, "outputs")
+    return os.path.join(project_directory, "outputs", "baseline")
