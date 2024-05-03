@@ -1,11 +1,11 @@
 defaults:
   - _self_
-  - foundation: resnet34
-  - flood: resnet34_siamese
+  - foundation: unet
+  - flood: unet_siamese
 
 hydra:
   run:
-    dir: ${oc.env:GSN_SN8_DIR}/outputs/${hydra.job.name}/${now:%Y-%m-%d_%H-%M-%S}
+    dir: ${oc.env:GSN_SN8_DIR}/outputs/baseline/${hydra.job.name}/${now:%Y-%m-%d_%H-%M-%S}
 
 # aoi = area of interest
 aoi_dirs:

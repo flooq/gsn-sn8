@@ -5,6 +5,7 @@ channels:
 dependencies:
   - pip
   - pytorch
+  - pytorch-lightning
   - torchvision
   - torchaudio
   - pytorch-cuda=12.1
@@ -19,6 +20,7 @@ dependencies:
   - jupyter
   - plotly
   - matplotlib
+  - segmentation-models-pytorch
   - pip:
       - opencv-python
       - hydra-core

@@ -2,7 +2,7 @@ import csv
 import copy
 from typing import List, Tuple
 
-from PIL import Image
+from skimage import io, transform
 import numpy as np
 import torch
 from torch.utils.data import Dataset
@@ -11,9 +11,10 @@ class SN8Dataset(Dataset):
     def __init__(self,
                  csv_filename: str,
                  data_to_load: List[str] = ["preimg","postimg","building","road","roadspeed","flood"],
-                 img_size: Tuple[int, int] = (1300,1300)):
+                 img_size: Tuple[int, int] = (1300,1300),
+                 channel_last: bool = False):
         """ pytorch dataset for spacenet-8 data. loads images from a csv that contains filepaths to the images
-        
+
         Parameters:
         ------------
         csv_filename (str): absolute filepath to the csv to load images from. the csv should have columns: preimg, postimg, building, road, roadspeed, flood.
@@ -23,21 +24,23 @@ class SN8Dataset(Dataset):
             road column contains the filepaths to the binary road labels (.tif)
             roadspeed column contains the filepaths to the road speed labels (.tif)
             flood column contains the filepaths to the flood labels (.tif)
-        data_to_load (list): a list that defines which of the images and labels to load from the .csv. 
+        data_to_load (list): a list that defines which of the images and labels to load from the .csv.
         img_size (tuple): the size of the input pre-event image in number of pixels before any augmentation occurs.
-        
+        channel_last (bool): if true then tensor is of shape (H,W,3), otherwise (3,H,W)
+
         """
         self.all_data_types = ["preimg", "postimg", "building", "road", "roadspeed", "flood"]
-        
+
         self.img_size = img_size
+        self.channel_last = channel_last
         self.data_to_load = data_to_load
-        
+
         self.files = []
 
         dict_template = {}
         for i in self.all_data_types:
             dict_template[i] = None
-        
+
         with open(csv_filename, newline='') as csvfile:
             reader = csv.DictReader(csvfile)
             for row in reader:
@@ -45,7 +48,7 @@ class SN8Dataset(Dataset):
                 for j in self.data_to_load:
                     in_data[j]=row[j]
                 self.files.append(in_data)
-        
+
         print("loaded", len(self.files), "image filepaths")
 
     def __len__(self):
@@ -59,10 +62,13 @@ class SN8Dataset(Dataset):
             filepath = data_dict[i]
             if filepath is not None:
                 # need to resample postimg to same spatial resolution/extent as preimg and labels.
-                ds = Image.open(filepath)
+                image = io.imread(filepath)
                 if i == "postimg":
-                    ds = ds.resize(size=(self.img_size[1], self.img_size[0]), resample=Image.BILINEAR)
-                image = np.array(ds)
+                    # TODO check if is BILINEAR, required for flood
+                    transform.resize(image, (self.img_size[1], self.img_size[0]), anti_aliasing=True)
+
+                if not self.channel_last and len(image.shape)==3:
+                    image = np.moveaxis(image, -1, 0)
                 if len(image.shape)==2: # add a channel axis if read image is only shape (H,W).
                     returned_data.append(torch.unsqueeze(torch.from_numpy(image), dim=0).float())
                 else:
