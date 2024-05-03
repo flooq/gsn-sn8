@@ -49,6 +49,12 @@ def write_metrics_epoch(epoch, fieldnames, train_metrics, val_metrics, training_
 def save_model_checkpoint(model, checkpoint_model_path): 
     torch.save(model.state_dict(), checkpoint_model_path)
 
+trainer_const_params = dict(
+    devices=1,
+    accelerator="gpu",
+    log_every_n_steps=1,
+)
+
 
 if __name__ == "__main__":
     args = parse_args()
@@ -80,12 +86,12 @@ if __name__ == "__main__":
     best_model_path = os.path.join(save_dir, "best_model.pth")
     training_log_csv = os.path.join(save_dir, "log.csv")
 
-    # init the training log
+    """# init the training log
     with open(training_log_csv, 'w', newline='') as csvfile:
         fieldnames = ['epoch', 'lr', 'train_tot_loss', 'train_bce', 'train_dice', 'train_focal', 'train_road_loss',
                                      'val_tot_loss', 'val_bce', 'val_dice', 'val_focal', 'val_road_loss']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-        writer.writeheader()
+        writer.writeheader()"""
 
     train_dataset = SN8Dataset(train_csv,
                             data_to_load=["preimg","building","roadspeed"],
@@ -95,10 +101,12 @@ if __name__ == "__main__":
                             data_to_load=["preimg","building","roadspeed"],
                             img_size=img_size)
     val_dataloader = torch.utils.data.DataLoader(val_dataset, num_workers=4, batch_size=batch_size)
+    logger = pl.loggers.CSVLogger(save_dir=save_dir, name=model_name)
 
-    model = LightningUNet(3, [1, 8], bilinear=True)
+    model = LightningUNet(3, [1, 8], bilinear=True, lr=initial_lr)
     trainer = pl.Trainer(
-
+        **trainer_const_params,
+        max_epochs=n_epochs, default_root_dir=save_dir, logger=logger
     )
     trainer.fit(model, train_dataloader, val_dataloader)
     
