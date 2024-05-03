@@ -1,0 +1,14 @@
+scikit-image==0.19.2
+Fiona==1.8.21
+Shapely==1.8.2
+geojson==2.5.0
+utm==0.7.0
+osmnx==1.1.2
+statsmodels==0.13.2
+geopandas==0.10.2
+hydra-core==1.3.2
+pillow==10.3.0
+imagecodecs==2023.3.16
+
+torch==2.0.1
+pytorch-lightning==2.1.0
