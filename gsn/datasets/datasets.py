@@ -56,7 +56,7 @@ class SN8Dataset(Dataset):
 
     def __getitem__(self, index):
         data_dict = self.files[index]
-
+        
         returned_data = []
         for i in self.all_data_types:
             filepath = data_dict[i]
@@ -66,7 +66,6 @@ class SN8Dataset(Dataset):
                 if i == "postimg":
                     # TODO check if is BILINEAR, required for flood
                     transform.resize(image, (self.img_size[1], self.img_size[0]), anti_aliasing=True)
-
                 if not self.channel_last and len(image.shape)==3:
                     image = np.moveaxis(image, -1, 0)
                 if len(image.shape)==2: # add a channel axis if read image is only shape (H,W).
