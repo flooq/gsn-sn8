@@ -4,7 +4,8 @@ import torch.nn.functional as F
 import pytorch_lightning as pl
 
 from models.baseline_unet import UNet
-from models.losses import focal, soft_dice_loss, focal_loss_weight, soft_dice_loss_weight, road_loss_weight, building_loss_weight
+from models.losses import focal, soft_dice_loss, focal_loss_weight, soft_dice_loss_weight, \
+    road_loss_weight, building_loss_weight, bceloss
 
 
 class LightningUNet(pl.LightningModule):
@@ -18,7 +19,7 @@ class LightningUNet(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         preimg, postimg, building, road, roadspeed, flood = batch
         building_pred, road_pred = self.model(preimg)
-        bce_l = nn.BCEWithLogitsLoss(building_pred, building)
+        bce_l = bceloss(building_pred, building)
         y_pred = F.sigmoid(road_pred)
 
         focal_l = focal(y_pred, roadspeed)
@@ -32,7 +33,7 @@ class LightningUNet(pl.LightningModule):
     def validation_step(self, batch, batch_idx):
         preimg, postimg, building, road, roadspeed, flood = batch
         building_pred, road_pred = self.model(preimg)
-        bce_l = nn.BCEWithLogitsLoss(building_pred, building)
+        bce_l = bceloss(building_pred, building)
         y_pred = F.sigmoid(road_pred)
 
         focal_l = focal(y_pred, roadspeed)

@@ -1,6 +1,5 @@
 import torch
 
-
 soft_dice_loss_weight = 0.25  # road loss
 focal_loss_weight = 0.75  # road loss
 road_loss_weight = 0.5
@@ -36,3 +35,6 @@ def focal(outputs, targets, gamma=2,  ignore_index=255):
     targets = torch.clamp(targets, eps, 1. - eps)
     pt = (1 - targets) * (1 - outputs) + targets * outputs
     return (-(1. - pt) ** gamma * torch.log(pt)).mean()
+
+
+bceloss = torch.nn.BCEWithLogitsLoss()
