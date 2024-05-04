@@ -65,6 +65,7 @@ def main():
     assert(os.path.exists(save_dir))
     now = datetime.now()
     date_total = str(now.strftime("%d-%m-%Y-%H-%M"))
+
     save_dir = os.path.join(save_dir, f"{model_name}_lr{'{:.2e}'.format(initial_lr)}_bs{batch_size}_{date_total}")
     if not os.path.exists(save_dir):
         os.mkdir(save_dir)
