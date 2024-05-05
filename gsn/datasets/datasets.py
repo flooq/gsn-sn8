@@ -77,7 +77,10 @@ class SN8Dataset(Dataset):
 
         return returned_data
 
-    def get_image_filename(self, index: int) -> str:
-        """ return pre-event image absolute filepath at index """
-        data_dict = self.files[index]
-        return data_dict["preimg"]
+
+flood_classes = torch.Tensor([1, 2, 3, 4])
+def get_flood_mask(flood_batch):
+    assert flood_batch.shape[1] == 4, f"invalid flood shape: {flood_batch.shape}"
+    mask = torch.einsum("bchw,c->bhw", flood_batch, flood_classes)
+    assert torch.max(mask) <= 4, f"overlapping flood masks: {torch.max(mask)}"
+    return mask.int()
