@@ -3,7 +3,6 @@ import torch.nn.functional as F
 import pytorch_lightning as pl
 
 from models.baseline_unet import UNet
-from models.foundation_unet import FoundationUnet
 from models.losses import focal, soft_dice_loss, focal_loss_weight, soft_dice_loss_weight, \
     road_loss_weight, building_loss_weight, bceloss
 
@@ -11,8 +10,7 @@ from models.losses import focal, soft_dice_loss, focal_loss_weight, soft_dice_lo
 class LightningUNet(pl.LightningModule):
     def __init__(self, in_channels, n_classes, bilinear=True, **kwargs):
         super(LightningUNet, self).__init__()
-        # self.model = UNet(in_channels, n_classes, bilinear)
-        self.model = FoundationUnet(encoder_name="resnet50", encoder_weights="imagenet")
+        self.model = UNet(in_channels, n_classes, bilinear)
         self.lr = kwargs.get("lr", 1e-3)
 
     def forward(self, x):
