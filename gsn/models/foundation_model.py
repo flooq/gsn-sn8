@@ -8,7 +8,7 @@ from segmentation_models_pytorch.decoders.unet.decoder import UnetDecoder
 from segmentation_models_pytorch.encoders import get_encoder
 
 
-class FoundationUnet(nn.Module):
+class FoundationModel(nn.Module):
     def __init__(
             self,
             encoder_name: str = "resnet50",
@@ -75,7 +75,7 @@ class FoundationUnet(nn.Module):
 
 
 if __name__ == "__main__":
-    model = FoundationUnet(encoder_name="resnet34")
+    model = FoundationModel(encoder_name="resnet34")
     print(model)
 
     model.eval()
