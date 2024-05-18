@@ -64,6 +64,8 @@ class LightningUNetSiamese(pl.LightningModule):
         # flood_pred = model(combinedimg) # this is for resnet34 with stacked preimg+postimg input
         flood_pred = self.model(preimg, postimg)  # this is for siamese resnet34 with stacked preimg+postimg input
         loss = celoss(flood_pred, flood)
+        values = {"train/loss": loss}
+        self.log_metrics(values)
         return loss
 
     def validation_step(self, batch, batch_idx):
@@ -72,8 +74,8 @@ class LightningUNetSiamese(pl.LightningModule):
         # flood_pred = model(combinedimg) # this is for resnet34 with stacked preimg+postimg input
         flood_pred = self.model(preimg, postimg)  # this is for siamese resnet34 with stacked preimg+postimg input
         loss = celoss(flood_pred, flood)
-        values = {"loss": loss}
-        self.log_dict(values)
+        values = {"val/loss": loss}
+        self.log_metrics(values)
         return loss
 
     def configure_optimizers(self):

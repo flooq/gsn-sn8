@@ -81,11 +81,13 @@ def main():
                             img_size=img_size)
     val_dataloader = torch.utils.data.DataLoader(val_dataset, num_workers=4, batch_size=batch_size)
     logger = pl.loggers.CSVLogger(save_dir=save_dir, name=model_name)
-
+    neptune_logger = pl.loggers.neptune.NeptuneLogger(
+        api_key=os.environ["NEPTUNE_API_TOKEN"], project="gsn/baseline-flood", log_model_checkpoint=False
+    )
     model = LightningUNetSiamese(3, num_classes, bilinear=True, lr=initial_lr)
     trainer = pl.Trainer(
         **trainer_const_params,
-        max_epochs=n_epochs, default_root_dir=save_dir, logger=logger
+        max_epochs=n_epochs, default_root_dir=save_dir, logger=neptune_logger
     )
     trainer.fit(model, train_dataloader, val_dataloader)
 
