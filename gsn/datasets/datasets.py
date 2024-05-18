@@ -79,7 +79,9 @@ class SN8Dataset(Dataset):
 
         return returned_data
 
-    def get_image_filename(self, index: int) -> str:
-        """ return pre-event image absolute filepath at index """
-        data_dict = self.files[index]
-        return data_dict["preimg"]
+
+def get_flood_mask(flood_batch):
+    assert flood_batch.shape[1] == 4, f"invalid flood shape: {flood_batch.shape}"
+    nonzero_mask = torch.sum(flood_batch, dim=1) > 0
+    class_mask = torch.argmax(flood_batch, dim=1)
+    return class_mask.long() * nonzero_mask.long()

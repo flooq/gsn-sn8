@@ -33,3 +33,4 @@ def focal(outputs, targets, gamma=2,  ignore_index=255):
 
 
 bceloss = torch.nn.BCEWithLogitsLoss()
+celoss = torch.nn.CrossEntropyLoss()
