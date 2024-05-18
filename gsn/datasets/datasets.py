@@ -12,7 +12,7 @@ class SN8Dataset(Dataset):
                  csv_filename: str,
                  data_to_load: List[str] = ["preimg","postimg","building","road","roadspeed","flood"],
                  img_size: Tuple[int, int] = (1300,1300),
-                 channel_last: bool = False):
+                 crop_size: Tuple[int, int] = (1024,1024)):
         """ pytorch dataset for spacenet-8 data. loads images from a csv that contains filepaths to the images
 
         Parameters:
@@ -26,13 +26,13 @@ class SN8Dataset(Dataset):
             flood column contains the filepaths to the flood labels (.tif)
         data_to_load (list): a list that defines which of the images and labels to load from the .csv.
         img_size (tuple): the size of the input pre-event image in number of pixels before any augmentation occurs.
-        channel_last (bool): if true then tensor is of shape (H,W,3), otherwise (3,H,W)
+        crop_size (tuple): the crop size of the input pre-event image in number of pixels, anchor is at top left corner.
 
         """
         self.all_data_types = ["preimg", "postimg", "building", "road", "roadspeed", "flood"]
 
         self.img_size = img_size
-        self.channel_last = channel_last
+        self.crop_size = crop_size
         self.data_to_load = data_to_load
 
         self.files = []
@@ -58,19 +58,21 @@ class SN8Dataset(Dataset):
         data_dict = self.files[index]
         
         returned_data = []
+        crop_h = self.crop_size[0]
+        crop_w = self.crop_size[1]
         for i in self.all_data_types:
             filepath = data_dict[i]
             if filepath is not None:
                 # need to resample postimg to same spatial resolution/extent as preimg and labels.
                 image = io.imread(filepath)
                 if i == "postimg":
-                    # TODO check if is BILINEAR, required for flood
-                    transform.resize(image, (self.img_size[1], self.img_size[0]), anti_aliasing=True)
-                if not self.channel_last and len(image.shape)==3:
-                    image = np.moveaxis(image, -1, 0)
+                    image = transform.resize(image, (self.img_size[1], self.img_size[0]), preserve_range=True)
                 if len(image.shape)==2: # add a channel axis if read image is only shape (H,W).
+                    image = image[:crop_h, :crop_w]
                     returned_data.append(torch.unsqueeze(torch.from_numpy(image), dim=0).float())
                 else:
+                    image = np.moveaxis(image, -1, 0)
+                    image = image[:, :crop_h, :crop_w]
                     returned_data.append(torch.from_numpy(image).float())
             else:
                 returned_data.append(0)
