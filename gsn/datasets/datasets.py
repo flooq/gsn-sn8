@@ -85,4 +85,4 @@ def get_flood_mask(flood_batch):
     assert flood_batch.shape[1] == 4, f"invalid flood shape: {flood_batch.shape}"
     mask = torch.einsum("bchw,c->bhw", flood_batch, flood_classes.to(flood_batch.device))
     assert torch.max(mask) <= 4, f"overlapping flood masks: {torch.max(mask)}"
-    return mask.int()
+    return mask.long()
