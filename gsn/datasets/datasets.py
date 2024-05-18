@@ -83,6 +83,9 @@ class SN8Dataset(Dataset):
 flood_classes = torch.Tensor([1, 2, 3, 4])
 def get_flood_mask(flood_batch):
     assert flood_batch.shape[1] == 4, f"invalid flood shape: {flood_batch.shape}"
+    nonzero_mask = torch.sum(flood_batch, dim=1) > 0
+    class_mask = torch.argmax(flood_batch, dim=1)
+    return class_mask.long() * nonzero_mask.long()
     mask = torch.einsum("bchw,c->bhw", flood_batch, flood_classes.to(flood_batch.device))
     assert torch.max(mask) <= 4, f"overlapping flood masks: {torch.max(mask)}"
     return mask.long()
