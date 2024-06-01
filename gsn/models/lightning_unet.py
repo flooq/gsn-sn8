@@ -3,8 +3,9 @@ import torch.nn.functional as F
 import pytorch_lightning as pl
 
 from models.baseline_unet import UNet, UNetSiamese
-from models.losses import focal, soft_dice_loss, focal_loss_weight, soft_dice_loss_weight, \
+from loss.losses import focal, soft_dice_loss, focal_loss_weight, soft_dice_loss_weight, \
     road_loss_weight, building_loss_weight, bceloss, celoss
+from loss.metrics import get_flood_segmentation_metrics
 from datasets.datasets import get_flood_mask
 
 
@@ -75,6 +76,8 @@ class LightningUNetSiamese(pl.LightningModule):
         flood_pred = self.model(preimg, postimg)  # this is for siamese resnet34 with stacked preimg+postimg input
         loss = celoss(flood_pred, flood)
         values = {"val/loss": loss}
+        metrics = get_flood_segmentation_metrics(flood_pred, flood)
+        values.update({f"val/{metric}": metrics[metric] for metric in metrics})
         self.log_dict(values)
         return loss
 
