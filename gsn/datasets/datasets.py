@@ -1,18 +1,18 @@
 import csv
 import copy
 from typing import List, Tuple
-
-from skimage import io, transform
+import cv2
 import numpy as np
 import torch
 from torch.utils.data import Dataset
+from albumentations.augmentations.geometric.resize import Resize
 
 class SN8Dataset(Dataset):
     def __init__(self,
                  csv_filename: str,
                  data_to_load: List[str] = ["preimg","postimg","building","road","roadspeed","flood"],
-                 img_size: Tuple[int, int] = (1300,1300),
-                 crop_size: Tuple[int, int] = (1024,1024)):
+                 img_size: Tuple[int, int] = (1300, 1300),
+                 out_img_size: Tuple[int, int] = (1024, 1024)):
         """ pytorch dataset for spacenet-8 data. loads images from a csv that contains filepaths to the images
 
         Parameters:
@@ -30,12 +30,14 @@ class SN8Dataset(Dataset):
 
         """
         self.all_data_types = ["preimg", "postimg", "building", "road", "roadspeed", "flood"]
-
+        self.mask_data_types = ("building", "road", "roadspeed", "flood")
         self.img_size = img_size
-        self.crop_size = crop_size
+        self.out_img_size = out_img_size
         self.data_to_load = data_to_load
-
         self.files = []
+
+        self.img_resize = Resize(*out_img_size)  # default interpolation method is linear
+        self.mask_resize = Resize(*out_img_size, interpolation=cv2.INTER_NEAREST)
 
         dict_template = {}
         for i in self.all_data_types:
@@ -46,7 +48,7 @@ class SN8Dataset(Dataset):
             for row in reader:
                 in_data = copy.copy(dict_template)
                 for j in self.data_to_load:
-                    in_data[j]=row[j]
+                    in_data[j] = row[j]
                 self.files.append(in_data)
 
         print("loaded", len(self.files), "image filepaths")
@@ -58,21 +60,18 @@ class SN8Dataset(Dataset):
         data_dict = self.files[index]
         
         returned_data = []
-        crop_h = self.crop_size[0]
-        crop_w = self.crop_size[1]
         for i in self.all_data_types:
             filepath = data_dict[i]
             if filepath is not None:
-                # need to resample postimg to same spatial resolution/extent as preimg and labels.
-                image = io.imread(filepath)
-                if i == "postimg":
-                    image = transform.resize(image, (self.img_size[1], self.img_size[0]), preserve_range=True)
-                if len(image.shape)==2: # add a channel axis if read image is only shape (H,W).
-                    image = image[:crop_h, :crop_w]
+                image = cv2.imread(filepath)
+                if i in self.mask_data_types:
+                    image = self.mask_resize.apply(image)
+                else:
+                    image = self.img_resize.apply(image)
+                if len(image.shape) == 2:  # add a channel axis if read image is only shape (H,W).
                     returned_data.append(torch.unsqueeze(torch.from_numpy(image), dim=0).float())
                 else:
                     image = np.moveaxis(image, -1, 0)
-                    image = image[:, :crop_h, :crop_w]
                     returned_data.append(torch.from_numpy(image).float())
             else:
                 returned_data.append(0)
