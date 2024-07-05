@@ -1,0 +1,11 @@
+\newpage % Rozdziały zaczynamy od nowej strony.
+\section{Cel pracy}
+Niniejsza praca przedstawia rozwiązanie zadania konkursowego \textit{SpaceNet 8: Flood Detection Challenge Using Multiclass Segmentation} \cite{spacenet8}. Celem konkursu, który zakończył się w październiku 2022 roku, było wyłonienie najlepszych algorytmów wykrywających budynki i drogi, a także ich zniszczenia na skutek katastrof naturalnych, na zdjęciach satelitarnych. Oceniane były rozwiązania dwóch zagadnień:
+\begin{enumerate}
+\item Segmentacja budynków i dróg na pojedynczych zdjęciach oraz klasyfikacja dróg ze względu na maksymalną dozwoloną prędkość
+\item Segmentacja zniszczonych budynków i dróg na podstawie par zdjęć wykonanych przed i po katastrofie naturalnej
+\end{enumerate}
+Ta praca skupia się na rozwiązaniu drugiego zagadnienia.
+\subsection{Zbiór danych}
+Zbiór danych udostępniony przez organizatorów konkursu składa się ze zdjęć satelitarnych w formacie TIFF, podzielonych na zdjęcia wykonane przed i po katastrofie, adnotacji budynków i dróg w formacie GeoJSON oraz plików CSV zawierających przypisanie adnotacji do zdjęć. Podział danych na zbiór treningowy i testowy jest zadany z góry.
+
