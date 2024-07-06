@@ -1,4 +1,9 @@
 \newpage % Rozdziały zaczynamy od nowej strony.
 \section{Opis rozwiązania}
-
-Opis proponowanego rozwiązania
+\subsection{Zbiór danych}
+Do wstępnej obróbki zbioru danych wykorzystano skrypty dostarczone przez organizatorów konkursu razem z rozwiązaniem \textit{baseline} w niezmienionej postaci. Przetwarzają one adnotacje w formacie GeoJSON na obrazy w formacie TIFF i rozdzielczości identycznej jak odpowiadające im zdjęcia. Dla jednej pary zdjęć (przed i po katastrofie) generowane są maksymalnie cztery jednokanałowe obrazy:
+\begin{enumerate}
+\item Pikselowa maska budynków o wartościach 0 -- brak budynku, 1 -- budynek.
+\item Pikselowa maska dróg o wartościach 0 -- brak drogi, 1 -- droga.
+\item Pikselowa maska dróg o wartościach od 0 do 7, odpowiadających różnym ograniczeniom prędkości. Nieużywana w tej pracy.
+\item Pikselowa maska budynków i dróg po katastrofie z klasyfikacją zniszczeń. Wartości: 0 -- 
