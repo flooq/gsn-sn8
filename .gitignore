@@ -23,3 +23,12 @@ ipython_config.py
 inputs/
 outputs/
 
+# LaTeX auxiliary files
+*.aux
+*.bcf
+*.lof
+*.log
+*.lot
+*.out
+*.toc
+*.run.xml
