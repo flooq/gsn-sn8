@@ -7,12 +7,16 @@ import torch
 from torch.utils.data import Dataset
 from albumentations.augmentations.geometric.resize import Resize
 
+from .augmentations import spatial_augmentations, color_augmentations
+
+
 class SN8Dataset(Dataset):
     def __init__(self,
                  csv_filename: str,
-                 data_to_load: List[str] = ["preimg","postimg","building","road","roadspeed","flood"],
+                 data_to_load: List[str] = ("preimg", "postimg" ,"building" ,"road", "roadspeed" ,"flood"),
                  img_size: Tuple[int, int] = (1300, 1300),
-                 out_img_size: Tuple[int, int] = (1024, 1024)):
+                 out_img_size: Tuple[int, int] = (1024, 1024),
+                 augment: bool = False):
         """ pytorch dataset for spacenet-8 data. loads images from a csv that contains filepaths to the images
 
         Parameters:
@@ -25,11 +29,11 @@ class SN8Dataset(Dataset):
             roadspeed column contains the filepaths to the road speed labels (.tif)
             flood column contains the filepaths to the flood labels (.tif)
         data_to_load (list): a list that defines which of the images and labels to load from the .csv.
-        img_size (tuple): the size of the input pre-event image in number of pixels before any augmentation occurs.
-        crop_size (tuple): the crop size of the input pre-event image in number of pixels, anchor is at top left corner.
-
+        img_size (tuple): the size of the input pre-event image in number of pixels before resizing.
+        out_img_size (tuple): the size of the input pre- and post-event images in number of pixels after resizing.
+        augment (bool): whether to add augmented images to the dataset.
         """
-        self.all_data_types = ["preimg", "postimg", "building", "road", "roadspeed", "flood"]
+        self.all_data_types = ("preimg", "postimg", "building", "road", "roadspeed", "flood")
         self.mask_data_types = ("building", "road", "roadspeed", "flood")
         self.img_size = img_size
         self.out_img_size = out_img_size
@@ -38,6 +42,10 @@ class SN8Dataset(Dataset):
 
         self.img_resize = Resize(*out_img_size)  # default interpolation method is linear
         self.mask_resize = Resize(*out_img_size, interpolation=cv2.INTER_NEAREST)
+
+        self.spatial_augmentations = spatial_augmentations if augment else None
+        self.color_augmentations = color_augmentations if augment else None
+        self.n_augmentations = len(spatial_augmentations) * len(color_augmentations) if augment else 1
 
         dict_template = {}
         for i in self.all_data_types:
@@ -54,7 +62,30 @@ class SN8Dataset(Dataset):
         print("loaded", len(self.files), "image filepaths")
 
     def __len__(self):
-        return len(self.files)
+        return len(self.files) * self.n_augmentations
+
+    def _resize(self, image, data_type):
+        if data_type in self.mask_data_types:
+            return self.mask_resize.apply(image)
+        return self.img_resize.apply(image)
+
+    def _conform_axes(self, image):
+        if len(image.shape) == 2:  # add a channel axis if read image is only shape (H,W).
+            return torch.unsqueeze(torch.from_numpy(image), dim=0).float()
+        else:
+            image = np.moveaxis(image, -1, 0)
+            return torch.from_numpy(image).float()
+
+    def _augment(self, image, index, data_type):
+        if self.n_augmentations == 1:
+            return image
+        aug_index = index % self.n_augmentations
+        spatial_aug = self.spatial_augmentations[aug_index // len(self.color_augmentations)]
+        aug_image = spatial_aug(image)
+        if data_type in self.mask_data_types:
+            return aug_image
+        color_aug = self.color_augmentations[aug_index % len(self.color_augmentations)]
+        return color_aug(aug_image)
 
     def __getitem__(self, index):
         data_dict = self.files[index]
@@ -64,15 +95,10 @@ class SN8Dataset(Dataset):
             filepath = data_dict[i]
             if filepath is not None:
                 image = cv2.imread(filepath)
-                if i in self.mask_data_types:
-                    image = self.mask_resize.apply(image)
-                else:
-                    image = self.img_resize.apply(image)
-                if len(image.shape) == 2:  # add a channel axis if read image is only shape (H,W).
-                    returned_data.append(torch.unsqueeze(torch.from_numpy(image), dim=0).float())
-                else:
-                    image = np.moveaxis(image, -1, 0)
-                    returned_data.append(torch.from_numpy(image).float())
+                image = self._resize(image, i)
+                image = self._conform_axes(image)
+                image = self._augment(image, index, i)
+                returned_data.append(image)
             else:
                 returned_data.append(0)
 

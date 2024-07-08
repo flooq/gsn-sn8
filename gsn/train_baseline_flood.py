@@ -73,12 +73,13 @@ def main():
         os.chmod(save_dir, 0o777)
 
     train_dataset = SN8Dataset(train_csv,
-                            data_to_load=["preimg", "postimg", "flood"],
-                            img_size=img_size)
+                               data_to_load=["preimg", "postimg", "flood"],
+                               img_size=img_size,
+                               augment=True)
     train_dataloader = torch.utils.data.DataLoader(train_dataset, shuffle=True, num_workers=4, batch_size=batch_size)
     val_dataset = SN8Dataset(val_csv,
-                            data_to_load=["preimg", "postimg", "flood"],
-                            img_size=img_size)
+                             data_to_load=["preimg", "postimg", "flood"],
+                             img_size=img_size)
     val_dataloader = torch.utils.data.DataLoader(val_dataset, num_workers=4, batch_size=batch_size)
     logger = pl.loggers.CSVLogger(save_dir=save_dir, name=model_name)
     neptune_logger = pl.loggers.neptune.NeptuneLogger(
