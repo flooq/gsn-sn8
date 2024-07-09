@@ -88,7 +88,8 @@ class SN8Dataset(Dataset):
         return color_aug(aug_image)
 
     def __getitem__(self, index):
-        data_dict = self.files[index]
+        file_index = index // self.n_augmentations
+        data_dict = self.files[file_index]
         
         returned_data = []
         for i in self.all_data_types:
