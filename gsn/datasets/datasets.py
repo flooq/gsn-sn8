@@ -66,8 +66,8 @@ class SN8Dataset(Dataset):
 
     def _resize(self, image, data_type):
         if data_type in self.mask_data_types:
-            return self.mask_resize.apply(image)
-        return self.img_resize.apply(image)
+            return self.mask_resize.apply(image, interpolation=cv2.INTER_NEAREST)
+        return self.img_resize.apply(image, interpolation=cv2.INTER_LINEAR)
 
     def _conform_axes(self, image):
         if len(image.shape) == 2:  # add a channel axis if read image is only shape (H,W).
