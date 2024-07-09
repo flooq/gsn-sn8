@@ -97,8 +97,8 @@ class SN8Dataset(Dataset):
             if filepath is not None:
                 image = cv2.imread(filepath)
                 image = self._resize(image, i)
-                image = self._conform_axes(image)
                 image = self._augment(image, index, i)
+                image = self._conform_axes(image)
                 returned_data.append(image)
             else:
                 returned_data.append(0)
