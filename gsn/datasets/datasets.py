@@ -13,7 +13,7 @@ from .augmentations import spatial_augmentations, color_augmentations
 class SN8Dataset(Dataset):
     def __init__(self,
                  csv_filename: str,
-                 data_to_load: List[str] = ("preimg", "postimg" ,"building" ,"road", "roadspeed" ,"flood"),
+                 data_to_load: List[str] = ("preimg", "postimg", "building", "road", "roadspeed", "flood"),
                  img_size: Tuple[int, int] = (1300, 1300),
                  out_img_size: Tuple[int, int] = (1024, 1024),
                  augment: bool = False):

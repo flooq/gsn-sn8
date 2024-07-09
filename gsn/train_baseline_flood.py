@@ -35,6 +35,9 @@ def parse_args():
     parser.add_argument("--gpu",
                         type=int,
                         default=0)
+    parser.add_argument("--precision",
+                        type=str,
+                        default="medium")
     args = parser.parse_args()
     return args
 
@@ -43,7 +46,6 @@ trainer_const_params = dict(
     accelerator="gpu",
     log_every_n_steps=1,
 )
-img_size = (1300, 1300)
 num_classes = 5
 
 
@@ -57,11 +59,12 @@ def main():
     batch_size = args.batch_size
     n_epochs = args.n_epochs
     gpu = args.gpu
+    precision = args.precision
     os.environ['CUDA_VISIBLE_DEVICES'] = str(gpu)
+    torch.set_float32_matmul_precision(precision)
 
     SEED = 12
     torch.manual_seed(SEED)
-    torch.set_float32_matmul_precision('high')
 
     assert(os.path.exists(save_dir))
     now = datetime.now()
@@ -73,21 +76,23 @@ def main():
 
     train_dataset = SN8Dataset(train_csv,
                                data_to_load=["preimg", "postimg", "flood"],
-                               img_size=img_size,
-                               augment=True)
+                               augment=True
+                               )
     train_dataloader = torch.utils.data.DataLoader(train_dataset, shuffle=True, num_workers=4, batch_size=batch_size)
     val_dataset = SN8Dataset(val_csv,
-                             data_to_load=["preimg", "postimg", "flood"],
-                             img_size=img_size)
+                             data_to_load=["preimg", "postimg", "flood"]
+                             )
     val_dataloader = torch.utils.data.DataLoader(val_dataset, num_workers=4, batch_size=batch_size)
     logger = pl.loggers.CSVLogger(save_dir=save_dir, name=model_name)
-    neptune_logger = pl.loggers.neptune.NeptuneLogger(
-        api_key=os.environ["NEPTUNE_API_TOKEN"], project="gsn/baseline-flood", log_model_checkpoints=False
-    )
+    # neptune_logger = pl.loggers.neptune.NeptuneLogger(
+    #     api_key=os.environ["NEPTUNE_API_TOKEN"], project="gsn/baseline-flood", log_model_checkpoints=False
+    # )
     model = LightningUNetSiamese(3, num_classes, bilinear=True, lr=initial_lr)
     trainer = pl.Trainer(
         **trainer_const_params,
-        max_epochs=n_epochs, default_root_dir=save_dir, logger=neptune_logger
+        max_epochs=n_epochs,
+        default_root_dir=save_dir,
+        logger=logger
     )
     trainer.fit(model, train_dataloader, val_dataloader)
 
