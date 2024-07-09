@@ -1,10 +1,12 @@
 import albumentations as A
-
+from itertools import combinations_with_replacement
 
 class GeometricTransform:
-    def __init__(self, vertical_flip: bool, rotate_90: int):
+    def __init__(self, vertical_flip: bool, horizontal_flip: bool, transpose: bool):
         self.transform = A.Compose(
-            [A.VerticalFlip(p=int(vertical_flip))] + [A.RandomRotate90(p=1)] * rotate_90
+            A.VerticalFlip(p=int(vertical_flip)),
+            A.HorizontalFlip(p=int(horizontal_flip)),
+            A.Transpose(p=int(transpose))
         )
 
     def __call__(self, image):
@@ -26,8 +28,8 @@ class ColorTransform:
         return transformed["image"]
 
 
-rotation_range = range(4)
-flip_range = (True, False)
+# All combinations of the three flips generate the D_8 group
+spatial_augmentations = [GeometricTransform(*c) for c in combinations_with_replacement((False, True), 3)]
+# Color augmentations are randomized
 n_color_transforms = 5
-spatial_augmentations = [GeometricTransform(vertical_flip=flip, rotate_90=rotate) for flip in flip_range for rotate in rotation_range]
 color_augmentations = [ColorTransform() for _ in range(n_color_transforms)]

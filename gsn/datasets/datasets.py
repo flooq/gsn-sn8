@@ -107,7 +107,7 @@ class SN8Dataset(Dataset):
 
 
 def get_flood_mask(flood_batch):
-    assert flood_batch.shape[1] == 4, f"invalid flood shape: {flood_batch.shape}"
+    assert flood_batch.shape[1] == 3, f"invalid flood shape: {flood_batch.shape}"
     nonzero_mask = torch.sum(flood_batch, dim=1) > 0
-    class_mask = torch.argmax(flood_batch, dim=1)
+    class_mask = torch.argmax(flood_batch, dim=1) + 1
     return class_mask.long() * nonzero_mask.long()
