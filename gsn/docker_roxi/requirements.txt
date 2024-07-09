@@ -1,4 +1,4 @@
-scikit-image==0.19.2
+scikit-image==0.21.0
 Fiona==1.8.21
 Shapely==1.8.2
 geojson==2.5.0
@@ -13,5 +13,8 @@ imagecodecs==2023.3.16
 torch==2.0.1
 pytorch-lightning==2.1.0
 segmentation-models-pytorch==0.3.3
+albumentations==1.4.8
+opencv-python==4.9.0.80
+opencv-contrib-python==4.10.0.84
 jsonschema==4.22.0
 neptune==1.10.4

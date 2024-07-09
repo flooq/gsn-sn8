@@ -8,6 +8,7 @@ WORKDIR /tmp
 COPY requirements.txt .
 
 RUN set -eux && pip install --upgrade pip && pip install --no-cache-dir -r /tmp/requirements.txt
+RUN pip install "opencv-python-headless<4.3"
 
 WORKDIR /gsn
 
