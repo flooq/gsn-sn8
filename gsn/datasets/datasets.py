@@ -2,6 +2,7 @@ import csv
 import copy
 from typing import List, Tuple
 import cv2
+from skimage import io
 import numpy as np
 import torch
 from torch.utils.data import Dataset
@@ -95,7 +96,7 @@ class SN8Dataset(Dataset):
         for i in self.all_data_types:
             filepath = data_dict[i]
             if filepath is not None:
-                image = cv2.imread(filepath)
+                image = io.imread(filepath)
                 image = self._resize(image, i)
                 image = self._augment(image, index, i)
                 image = self._conform_axes(image)
@@ -107,7 +108,7 @@ class SN8Dataset(Dataset):
 
 
 def get_flood_mask(flood_batch):
-    assert flood_batch.shape[1] == 3, f"invalid flood shape: {flood_batch.shape}"
+    assert flood_batch.shape[1] == 4, f"invalid flood shape: {flood_batch.shape}"
     nonzero_mask = torch.sum(flood_batch, dim=1) > 0
     class_mask = torch.argmax(flood_batch, dim=1) + 1
     return class_mask.long() * nonzero_mask.long()
