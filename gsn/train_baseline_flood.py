@@ -73,6 +73,7 @@ def main():
     if not os.path.exists(save_dir):
         os.mkdir(save_dir)
         os.chmod(save_dir, 0o777)
+    model_checkpoint = pl.pytorch.callbacks.ModelCheckpoint(dirpath=save_dir, save_top_k=-1, save_every_n_epochs=1)
 
     train_dataset = SN8Dataset(train_csv,
                                data_to_load=["preimg", "postimg", "flood"],
@@ -92,6 +93,7 @@ def main():
         **trainer_const_params,
         max_epochs=n_epochs,
         default_root_dir=save_dir,
+        callbacks=[model_checkpoint],
         logger=neptune_logger
     )
     trainer.fit(model, train_dataloader, val_dataloader)

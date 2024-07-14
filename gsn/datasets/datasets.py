@@ -8,7 +8,7 @@ import torch
 from torch.utils.data import Dataset
 from albumentations.augmentations.geometric.resize import Resize
 
-from augmentations import spatial_augmentations, color_augmentations
+from .augmentations import spatial_augmentations, color_augmentations
 
 
 class SN8Dataset(Dataset):
