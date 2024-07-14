@@ -73,7 +73,7 @@ def main():
     if not os.path.exists(save_dir):
         os.mkdir(save_dir)
         os.chmod(save_dir, 0o777)
-    model_checkpoint = pl.pytorch.callbacks.ModelCheckpoint(dirpath=save_dir, save_top_k=-1, save_every_n_epochs=1)
+    model_checkpoint = pl.callbacks.ModelCheckpoint(dirpath=save_dir, save_top_k=-1, every_n_epochs=1)
 
     train_dataset = SN8Dataset(train_csv,
                                data_to_load=["preimg", "postimg", "flood"],
