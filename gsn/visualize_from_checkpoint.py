@@ -4,7 +4,7 @@ import os
 import numpy as np
 import cv2
 
-from datasets import SN8Dataset
+from datasets.datasets import SN8Dataset
 
 import torch
 
