@@ -7,7 +7,6 @@ dependencies:
   - pytorch
   - pytorch-lightning
   - torchvision
-  - torchaudio
   - pytorch-cuda=12.1
   - scikit-image
   - fiona
@@ -21,6 +20,10 @@ dependencies:
   - plotly
   - matplotlib
   - segmentation-models-pytorch
+  - jsonschema==4.22.0
+  - neptune==1.10.4
   - pip:
       - opencv-python
       - hydra-core
+      - opencv-contrib-python==4.10.0.84
+      - albumentations==1.4.8

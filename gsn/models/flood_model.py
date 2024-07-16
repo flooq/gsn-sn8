@@ -39,13 +39,9 @@ class FloodModel(nn.Module):
             attention_type=None
         )
 
-        self.flood_buildings = SegmentationHead(
+        self.floods = SegmentationHead(
             in_channels=decoder_channels[-1],
-            out_channels=2, activation=None, kernel_size=3)
-
-        self.flood_roads = SegmentationHead(
-            in_channels=decoder_channels[-1],
-            out_channels=2, activation=None, kernel_size=3)
+            out_channels=5, activation=None, kernel_size=3)
 
         if not concatenate_images and not add_images:
             raise ValueError("Both concatenation and addition of images are disabled.")
@@ -75,8 +71,7 @@ class FloodModel(nn.Module):
 
     def initialize(self):
         init.initialize_decoder(self.decoder)
-        init.initialize_head(self.flood_buildings)
-        init.initialize_head(self.flood_roads)
+        init.initialize_head(self.floods)
         for block in self.blocks:
             init.initialize_decoder(block)
 
@@ -101,9 +96,8 @@ class FloodModel(nn.Module):
             features.append(feature)
 
         decoder_output = self.decoder(*features)
-        flood_b = self.flood_buildings(decoder_output)
-        flood_r = self.flood_roads(decoder_output)
-        return flood_b, flood_r
+        flood_pred = self.floods(decoder_output)
+        return flood_pred
 
     @torch.no_grad()
     def predict(self, x1, x2):
@@ -121,6 +115,5 @@ if __name__ == "__main__":
     model.eval()
     preimg = torch.ones([1, 3, 1024, 1024], dtype=torch.float32)
     postimg = torch.ones([1, 3, 1024, 1024], dtype=torch.float32)
-    flood_buildings, flood_roads = model(preimg, postimg)
-    print('flood_buildings', flood_buildings.size())
-    print('flood_roads', flood_roads.size())
+    floods = model(preimg, postimg)
+    print('floods', floods.size())
