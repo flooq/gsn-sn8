@@ -44,6 +44,7 @@ class SN8Dataset(Dataset):
         self.img_resize = Resize(*out_img_size)  # default interpolation method is linear
         self.mask_resize = Resize(*out_img_size, interpolation=cv2.INTER_NEAREST)
 
+        #from augmentations import spatial_augmentations
         self.spatial_augmentations = spatial_augmentations if augment else None
         self.color_augmentations = color_augmentations if augment else None
         self.n_augmentations = len(spatial_augmentations) * len(color_augmentations) if augment else 1
@@ -112,3 +113,12 @@ def get_flood_mask(flood_batch):
     nonzero_mask = torch.sum(flood_batch, dim=1) > 0
     class_mask = torch.argmax(flood_batch, dim=1) + 1
     return class_mask.long() * nonzero_mask.long()
+
+def get_flood_mask_2(flood_batch):
+    #batch_size, _, height, width = flood_batch.shape
+    #additional_dim = torch.zeros(batch_size, 1, height, width).cuda()
+    mask = torch.sum(flood_batch, dim=1, keepdim=True) == 0
+    additional_dim = mask.long() ^ 1
+    flood = torch.cat((flood_batch, additional_dim), dim=1)
+    return flood
+

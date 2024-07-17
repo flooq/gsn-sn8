@@ -33,5 +33,5 @@ class ColorTransform:
 # All combinations of the three flips generate the D_8 group
 spatial_augmentations = [GeometricTransform(*c) for c in combinations_with_replacement((False, True), 3)]
 # Color augmentations are randomized
-n_color_transforms = 5
-color_augmentations = [ColorTransform() for _ in range(n_color_transforms)]
+n_color_transforms = 4
+color_augmentations = [lambda x: x] + [ColorTransform() for _ in range(n_color_transforms)]
