@@ -1,8 +1,5 @@
 \newpage % Rozdziały zaczynamy od nowej strony.
 \section{Wstęp}
-
-
-Motywacja, dlaczego warto zająć się rozwiązaniem postawionego problemu.
-
-Opis wkładu własnego - co zrobiono w ramach przygotowywania pracy dyplomowej. Np. przygotowanie zbioru danych, implementacja procedur to trenowania i ewaluacji modelu, opracowanie architektury modelu itp.
-W pracy wykorzystano gotowy zbiór danych podany przez organizatorów konkursu. Zaimplementowane procedury do trenowania i ewaluacji modeli oparte na bibliotece Pytorch Lightning i wykorzystujące serwis neptune.ai do zbierania wyników. Do implementacji architektury modeli wykorzystano bibliotekę MMSegmentation.
+Od wynalezienia perceptronu, które można uznać za pierwszy etap rozwoju sztucznych sieci neuronowych, ich podstawowym zastosowaniem było rozpoznawanie obrazów. Zapoczątkowało to dziedzinę wizji komputerowej, która z czasem objęła szeroki wachlarz zagadnień i technik. Obecnie jest to jeden z najbardziej rozwiniętych obszarów badań wykorzystujących sieci neuronowe.\\
+Niniejsza praca zajmuje się jednym z klasycznych zagadnień wizji komputerowej, jakim jest detekcja obiektów. Przedstawia ona rozwiązanie zadania konkursowego \textit{SpaceNet 8: Flood Detection Challenge Using Multiclass Segmentation} \cite{spacenet8}, które polegało na detekcji dróg i budynków na zdjęciach satelitarnych oraz klasyfikacji zniszczeń tych obiektów dokonanych przez powodzie. Tym, co odróżnia to zadanie od typowego zagadnienia segmentacji obrazu jest to, że dla każdej lokalizacji ze zbioru danych są dostępne dwa zdjęcia -- przed i po katastrofie. To pozwala zastosować modele o bardziej złożonej architekturze, np. sieć syjamską.\\
+Cały kod potrzebny do ukończenia pracy został napisany przez autorów w języku Python. Wykorzystano gotowy zbiór danych dostarczony przez organizatorów konkursu. Zaimplementowano własne procedury do trenowania i ewaluacji modeli oparte na bibliotece Pytorch Lightning i wykorzystujące serwis neptune.ai do zbierania wyników. Do implementacji architektury modeli wykorzystano bibliotekę MMSegmentation. Modele trenowano przy użyciu pojedynczych kart graficznych. 
