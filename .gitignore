@@ -32,3 +32,5 @@ outputs/
 *.out
 *.toc
 *.run.xml
+*.bbl
+*.blg
