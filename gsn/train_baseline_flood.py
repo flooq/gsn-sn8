@@ -88,7 +88,7 @@ def main():
     val_dataloader = torch.utils.data.DataLoader(val_dataset, num_workers=4, batch_size=batch_size)
 
     if args.load_checkpoint:
-        model = LightningUNetSiamese.load_from_checkpoint(args.load_checkpoint)
+        model = LightningUNetSiamese.load_from_checkpoint(args.load_checkpoint, in_channels=3, n_classes=num_classes)
     else:
         model = LightningUNetSiamese(3, num_classes, bilinear=True, lr=initial_lr)
     neptune_logger = pl.loggers.neptune.NeptuneLogger(
