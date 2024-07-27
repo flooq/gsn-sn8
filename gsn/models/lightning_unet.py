@@ -51,10 +51,10 @@ class LightningUNet(pl.LightningModule):
 
 
 class LightningUNetSiamese(pl.LightningModule):
-    def __init__(self, in_channels, n_classes, bilinear=True, **kwargs):
+    def __init__(self, in_channels, n_classes, lr, bilinear=True, step_size=40, gamma=0.25, **kwargs):
         super(LightningUNetSiamese, self).__init__()
         self.model = UNetSiamese(in_channels, n_classes, bilinear)
-        self.lr = kwargs.get("lr", 1e-3)
+        self.save_hyperparameters()
 
     def forward(self, x):
         return self.model(x)
@@ -82,6 +82,6 @@ class LightningUNetSiamese(pl.LightningModule):
         return loss
 
     def configure_optimizers(self):
-        optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)
-        scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=40, gamma=0.5)
+        optimizer = torch.optim.Adam(self.parameters(), lr=self.hparams.lr)
+        scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=self.hparams.step_size, gamma=self.hparams.gamma)
         return [optimizer], [scheduler]

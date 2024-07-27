@@ -17,9 +17,10 @@ def parse_args():
     parser.add_argument("--val_csv",
                          type=str,
                          required=True)
+    parser.add_argument("--load_checkpoint",
+                        type=str),
     parser.add_argument("--save_dir",
-                         type=str,
-                         required=True)
+                         type=str)
     parser.add_argument("--model_name",
                          type=str,
                          required=True)
@@ -28,7 +29,7 @@ def parse_args():
                         default=0.0001)
     parser.add_argument("--batch_size",
                          type=int,
-                        default=2)
+                        default=1)
     parser.add_argument("--n_epochs",
                          type=int,
                          default=50)
@@ -66,10 +67,12 @@ def main():
     SEED = 12
     torch.manual_seed(SEED)
 
-    assert(os.path.exists(save_dir))
     now = datetime.now()
     date_total = str(now.strftime("%d-%m-%Y-%H-%M"))
-    save_dir = os.path.join(save_dir, f"{model_name}_lr{'{:.2e}'.format(initial_lr)}_bs{batch_size}_{date_total}")
+    if save_dir is None:
+        save_dir = os.path.dirname(args.load_checkpoint)
+    else:
+        save_dir = os.path.join(save_dir, f"{model_name}_lr{'{:.2e}'.format(initial_lr)}_bs{batch_size}_{date_total}")
     if not os.path.exists(save_dir):
         os.mkdir(save_dir)
         os.chmod(save_dir, 0o777)
@@ -83,16 +86,21 @@ def main():
                              data_to_load=["preimg", "postimg", "flood"]
                              )
     val_dataloader = torch.utils.data.DataLoader(val_dataset, num_workers=4, batch_size=batch_size)
-    logger = pl.loggers.CSVLogger(save_dir=save_dir, name=model_name)
-    # neptune_logger = pl.loggers.neptune.NeptuneLogger(
-    #     api_key=os.environ["NEPTUNE_API_TOKEN"], project="gsn/baseline-flood", log_model_checkpoints=False
-    # )
-    model = LightningUNetSiamese(3, num_classes, bilinear=True, lr=initial_lr)
+
+    if args.load_checkpoint:
+        model = LightningUNetSiamese.load_from_checkpoint(args.load_checkpoint, in_channels=3, n_classes=num_classes)
+    else:
+        model = LightningUNetSiamese(3, num_classes, bilinear=True, lr=initial_lr)
+    neptune_logger = pl.loggers.neptune.NeptuneLogger(
+        api_key=os.environ["NEPTUNE_API_TOKEN"], project="gsn/baseline-flood", log_model_checkpoints=False
+    )
+    model_checkpoint = pl.callbacks.ModelCheckpoint(dirpath=save_dir, save_top_k=-1, every_n_epochs=4)
     trainer = pl.Trainer(
         **trainer_const_params,
         max_epochs=n_epochs,
         default_root_dir=save_dir,
-        logger=logger
+        callbacks=[model_checkpoint],
+        logger=neptune_logger
     )
     trainer.fit(model, train_dataloader, val_dataloader)
 
