@@ -10,4 +10,8 @@ def get_flood_segmentation_metrics(pred, gt_mask):
     precision = tp / (tp + fp) if tp + fp > 0 else 1
     recall = tp / (tp + fn) if tp + fn > 0 else 1
     accuracy = tp / (tp + fp + fn) if tp + fp + fn > 0 else 1
-    return {"accuracy": accuracy, "precision": precision, "recall": recall}
+    metrics = {
+        "accuracy": accuracy, "precision": precision, "recall": recall,
+        "tp": tp, "fp": fp, "fn": fn
+    }
+    return metrics
