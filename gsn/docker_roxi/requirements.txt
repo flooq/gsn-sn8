@@ -18,3 +18,4 @@ opencv-python==4.9.0.80
 opencv-contrib-python==4.10.0.84
 jsonschema==4.22.0
 neptune==1.10.4
+ipdb==0.13.13

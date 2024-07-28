@@ -43,20 +43,20 @@ def flood_mask(flood, idx):
 @click.option("--randomize/--first", type=bool, default=False)
 def main(data_csv, output_dir, n_images, randomize):
     dataset = SN8Dataset(data_csv,
-                         data_to_load=["preimg","postimg","building","road","flood"])
+                         data_to_load=["preimg", "postimg", "building", "road", "flood"])
     os.makedirs(output_dir, exist_ok=True)
     n_images = min(n_images, len(dataset))
     idx = random.choices(range(len(dataset)), k=n_images) if randomize else range(n_images)
     for i in idx:
         try:
-            preimg, postimg, building, road, roadspeed, flood = dataset[i] # roadspeed=0
+            preimg, postimg, building, road, _, flood = dataset[i]
         except Exception:
             print('File not found')
             continue
 
-        if len(preimg.shape)==3:
-            preimg = torch.permute(preimg, (1, 2, 0))
-            postimg = torch.permute(postimg, (1, 2, 0))
+        # if len(preimg.shape)==3:
+        #     preimg = torch.permute(preimg, (1, 2, 0))
+        #     postimg = torch.permute(postimg, (1, 2, 0))
 
         road = torch.squeeze(road).numpy().astype(bool)
         building = torch.squeeze(building).numpy().astype(bool)
