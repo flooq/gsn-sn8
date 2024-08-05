@@ -7,8 +7,8 @@ defaults:
   - model: siamese # model in (baseline, siamese, siamese_fused)
 
 augment: false
-batch_size: 2
-max_epochs: 10
+batch_size: 1
+max_epochs: 50
 learning_rate: 0.001
 
 ######################################
@@ -20,8 +20,9 @@ val_csv: ${project_dir}/inputs/sn8_data_val.csv
 
 hydra:
   run:
-    dir: ${project_dir}/outputs/gsn/${hydra.job.name}/${now:%Y-%m-%d_%H-%M-%S}
-
+    dir: ${project_dir}/outputs/gsn/${now:%Y-%m-%d}/${now:%H-%M-%S}
+  sweep:
+    dir: ${project_dir}/outputs/gsn/${now:%Y-%m-%d}/${now:%H-%M-%S}
 output_dir: ${hydra:runtime.output_dir}
 checkpoints_dir: ${hydra:runtime.output_dir}/checkpoints
 save_fig_n_images: 50
