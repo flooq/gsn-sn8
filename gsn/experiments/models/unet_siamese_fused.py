@@ -8,7 +8,7 @@ from segmentation_models_pytorch.decoders.unet.decoder import UnetDecoder
 from segmentation_models_pytorch.encoders import get_encoder
 
 
-class FloodModel(nn.Module):
+class UnetSiameseFused(nn.Module):
     def __init__(
             self,
             encoder_name: str = "resnet50",
@@ -94,6 +94,7 @@ class FloodModel(nn.Module):
         for i in range(0, len(enc_1)):
             if self.fuse == 'cat':
                 enc_fusion = torch.cat([enc_1[i], enc_2[i]], dim=1)
+                proj = self.projs[i][0](enc_fusion)
                 final_features.append(self.projs[i][0](enc_fusion))
             elif self.fuse == 'add':
                 enc_fusion = enc_1[i] + enc_2[i]
@@ -118,13 +119,12 @@ class FloodModel(nn.Module):
         return x
 
 
-
 if __name__ == "__main__":
-    model = FloodModel(encoder_name="resnet50")
+    model = UnetSiameseFused(encoder_name="resnet50")
     print(model)
 
     model.eval()
-    preimg = torch.ones([1, 3, 1024, 1024], dtype=torch.float32)
-    postimg = torch.ones([1, 3, 1024, 1024], dtype=torch.float32)
+    preimg = torch.ones([1, 3, 1280, 1280], dtype=torch.float32)
+    postimg = torch.ones([1, 3, 1280, 1280], dtype=torch.float32)
     floods = model(preimg, postimg)
     print('floods', floods.size())

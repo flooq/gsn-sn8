@@ -1,13 +1,15 @@
 ######################################
 ###        Training parameters     ###
-loss: 'celoss'
-model: 'complex'
+
+defaults:
+  - _self_
+  - loss: cross_entropy # loss in (bce, bce_and_dice, binary_focal, cross_entropy, focal_and_dice, mixed, soft_dice)
+  - model: siamese # model in (baseline, siamese, siamese_fused)
+
 augment: false
-batch_size: 1
+batch_size: 2
 max_epochs: 10
 learning_rate: 0.001
-
-checkpoint_path: '/home/pawel/projects/flooq/gsn-sn8/outputs/gsn/train_flood/2024-08-04_21-54-47/checkpoints/checkpoint.ckpt'
 
 ######################################
 ### Below are technical parameters ###
@@ -22,15 +24,12 @@ hydra:
 
 output_dir: ${hydra:runtime.output_dir}
 checkpoints_dir: ${hydra:runtime.output_dir}/checkpoints
-save_fig_n_images: 10
+save_fig_n_images: 50
 
 logger:
   neptune:
-    project: 'gsn/flood-complex-model'
-    n_images: 5
-    tags:
-      - model=${model}
-      - loss=${loss}
-      - augment=${augment}
-      - lr=${learning_rate}
-      - batch=${batch_size}
+    project: 'gsn/gsn'
+    n_images: 10
+    save_images: true
+    autoscale_images: true
+    metrics_by_class: true

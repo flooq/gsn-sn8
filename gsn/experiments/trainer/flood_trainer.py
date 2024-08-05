@@ -6,11 +6,11 @@ from metrics.metrics import get_train_metrics
 
 
 class FloodTrainer(pl.LightningModule):
-    def __init__(self, loss, model, **kwargs):
+    def __init__(self, loss, model, cfg):
         super(FloodTrainer, self).__init__()
         self.loss = loss
         self.model = model
-        self.lr = kwargs.get("lr", 1e-3)
+        self.cfg = cfg
         self.train_loss_sum = 0.0
         self.train_sample_count = 0
 
@@ -25,7 +25,8 @@ class FloodTrainer(pl.LightningModule):
 
     def validation_step(self, batch, batch_idx):
         _loss, flood_pred, flood = self._do_step(batch)
-        metrics = get_val_metrics(_loss, flood_pred, flood)
+        metrics_by_class = self.cfg.logger.neptune.metrics_by_class
+        metrics = get_val_metrics(_loss, flood_pred, flood, metrics_by_class)
         self.log_dict(metrics)
         return _loss
 
@@ -41,7 +42,7 @@ class FloodTrainer(pl.LightningModule):
         self.log_dict(metrics)
 
     def configure_optimizers(self):
-        optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)
+        optimizer = torch.optim.Adam(self.parameters(), lr=self.cfg.learning_rate)
         scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=30, gamma=0.8)
         return [optimizer], [scheduler]
 

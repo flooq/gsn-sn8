@@ -7,7 +7,7 @@ from segmentation_models_pytorch.decoders.unet.decoder import UnetDecoder
 from segmentation_models_pytorch.encoders import get_encoder
 
 
-class FloodSimpleModel(nn.Module):
+class UnetSiamese(nn.Module):
     def __init__(
             self,
             encoder_name: str = "resnet50",
@@ -16,7 +16,7 @@ class FloodSimpleModel(nn.Module):
             decoder_use_batchnorm: bool = True,
             decoder_channels: List[int] = (256, 128, 64, 32, 16),
             in_channels: int = 3,
-            device: str = None
+            device: str = "cuda"
     ):
         super().__init__()
 
@@ -36,14 +36,6 @@ class FloodSimpleModel(nn.Module):
             attention_type=None
         )
 
-        # self.flood_buildings = SegmentationHead(
-        #     in_channels=decoder_channels[-1],
-        #     out_channels=2, activation=None, kernel_size=3)
-
-        # self.flood_roads = SegmentationHead(
-        #     in_channels=decoder_channels[-1],
-        #     out_channels=2, activation=None, kernel_size=3)
-
         self.penultimate_conv = nn.Conv2d(decoder_channels[-1]*2, 64, kernel_size=3, padding=1)
         self.outc1 = nn.Conv2d(64, 5, kernel_size=1)
 
@@ -53,8 +45,6 @@ class FloodSimpleModel(nn.Module):
 
     def initialize(self):
         init.initialize_decoder(self.decoder)
-        # init.initialize_head(self.flood_buildings)
-        # init.initialize_head(self.flood_roads)
 
     def forward(self, x1, x2):
         features_x1 = self.encoder(x1)
@@ -79,11 +69,11 @@ class FloodSimpleModel(nn.Module):
 
 
 if __name__ == "__main__":
-    model = FloodSimpleModel(encoder_name="resnet50")
+    model = UnetSiamese(encoder_name="resnet50")
     print(model)
 
     model.eval()
-    preimg = torch.ones([1, 3, 1024, 1024], dtype=torch.float32)
-    postimg = torch.ones([1, 3, 1024, 1024], dtype=torch.float32)
+    preimg = torch.ones([1, 3, 1280, 1280], dtype=torch.float32)
+    postimg = torch.ones([1, 3, 1280, 1280], dtype=torch.float32)
     x = model(preimg, postimg)
     print('flood_buildings', x.size())

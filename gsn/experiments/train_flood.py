@@ -26,7 +26,7 @@ def train_flood(cfg: DictConfig) -> None:
         log_every_n_steps=1,
     )
     logger = get_logger(cfg)
-    flood_trainer = FloodTrainer(loss=get_loss(cfg), model=get_model(cfg), lr=cfg.learning_rate)
+    flood_trainer = FloodTrainer(loss=get_loss(cfg), model=get_model(cfg), cfg=cfg)
     trainer = pl.Trainer(
         **trainer_const_params,
         max_epochs=cfg.max_epochs,
@@ -38,10 +38,10 @@ def train_flood(cfg: DictConfig) -> None:
     data_module = SN8DataModule(train_csv=cfg.train_csv, val_csv=cfg.val_csv, batch_size=cfg.batch_size, augment=cfg.augment)
     trainer.fit(flood_trainer, datamodule=data_module)
 
-    checkpoint_path = os.path.join(cfg.checkpoints_dir, 'checkpoint.ckpt')
-    model_from_checkpoint = load_model_from_checkpoint(cfg, checkpoint_path)
-
-    save_eval_fig(cfg, model_from_checkpoint, logger)
+    if cfg.logger.neptune.save_images:
+        checkpoint_path = os.path.join(cfg.checkpoints_dir, 'checkpoint.ckpt')
+        model_from_checkpoint = load_model_from_checkpoint(cfg, checkpoint_path)
+        save_eval_fig(cfg, model_from_checkpoint, logger)
 
 
 if __name__ == "__main__":

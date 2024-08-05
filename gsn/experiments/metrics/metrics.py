@@ -6,7 +6,7 @@ def get_train_metrics(loss, prefix: str = 'train'):
     return metrics
 
 
-def get_val_metrics(loss, pred, mask, prefix: str = 'val'):
+def get_val_metrics(loss, pred, mask, metrics_by_class: bool = False, prefix: str = 'val'):
     assert pred.shape[1] == 5, f"Invalid flood prediction shape: {pred.shape}"
 
     # Convert predictions to class labels
@@ -26,27 +26,31 @@ def get_val_metrics(loss, pred, mask, prefix: str = 'val'):
     recall = tp / (tp + fn) if (tp + fn) > 0 else 1
     iou = tp / (tp + fp + fn) if (tp + fp + fn) > 0 else 1
 
-    metrics = {"iou": iou, "precision": precision, "recall": recall, "loss": loss}
+    metrics = {"iou": iou,
+               "precision": precision,
+               "recall": recall,
+               "loss": loss}
 
-    class_labels = {
-        "non_flood_building": 1,
-        "flood_building": 2,
-        "non_flood_road": 3,
-        "flood_road": 4
-    }
+    if metrics_by_class:
+        class_labels = {
+            "non_flood_building": 1,
+            "flood_building": 2,
+            "non_flood_road": 3,
+            "flood_road": 4
+        }
 
-    # for class_name, class_label in class_labels.items():
-    #     tp_class = torch.sum((pred_mask == class_label) & (gt_mask == class_label)).item()
-    #     fp_class = torch.sum((pred_mask == class_label) & (gt_mask != class_label)).item()
-    #     fn_class = torch.sum((pred_mask != class_label) & (gt_mask == class_label)).item()
-    #
-    #     precision_class = tp_class / (tp_class + fp_class) if (tp_class + fp_class) > 0 else 1
-    #     recall_class = tp_class / (tp_class + fn_class) if (tp_class + fn_class) > 0 else 1
-    #     accuracy_class = tp_class / (tp_class + fp_class + fn_class) if (tp_class + fp_class + fn_class) > 0 else 1
-    #
-    #     metrics[f"{class_name}_precision"] = precision_class
-    #     metrics[f"{class_name}_recall"] = recall_class
-    #     metrics[f"{class_name}_iou"] = accuracy_class
+        for class_name, class_label in class_labels.items():
+            tp_class = torch.sum((pred_mask == class_label) & (gt_mask == class_label)).item()
+            fp_class = torch.sum((pred_mask == class_label) & (gt_mask != class_label)).item()
+            fn_class = torch.sum((pred_mask != class_label) & (gt_mask == class_label)).item()
+
+            precision_class = tp_class / (tp_class + fp_class) if (tp_class + fp_class) > 0 else 1
+            recall_class = tp_class / (tp_class + fn_class) if (tp_class + fn_class) > 0 else 1
+            accuracy_class = tp_class / (tp_class + fp_class + fn_class) if (tp_class + fp_class + fn_class) > 0 else 1
+
+            metrics[f"{class_name}_precision"] = precision_class
+            metrics[f"{class_name}_recall"] = recall_class
+            metrics[f"{class_name}_iou"] = accuracy_class
 
     data = {}
     data.update({f"{prefix}/{metric}": metrics[metric] for metric in metrics})

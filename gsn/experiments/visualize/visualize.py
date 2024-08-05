@@ -42,16 +42,19 @@ def save_eval_fig(cfg: DictConfig, model_from_checkpoint, logger):
 
         road = torch.squeeze(road).numpy().astype(bool)
         building = torch.squeeze(building).numpy().astype(bool)
-        pre_vis = draw_preimage(preimg.numpy(), road, building)
+        pre_vis = draw_preimage(preimg.clone().numpy(), road, building)
         post_vis = draw_postimage(postimg.clone().numpy(), flood)
         post_vis_pred = draw_postimage(postimg.clone().numpy(), flood_pred)
         preimg_filename = dataset.files[i]["preimg"].split("/")[-1].replace(".tif", "_PRE.png")
         postimg_filename = dataset.files[i]["preimg"].split("/")[-1].replace(".tif", "_POST.png")
         postimg_pred_filename = dataset.files[i]["preimg"].split("/")[-1].replace(".tif", "_POST_pred.png")
-        if i < neptune_n_images:
-            logger.experiment["val/pre_img"].append(File.as_image(pre_vis))
-            logger.experiment["val/post_img"].append(File.as_image(post_vis))
-            logger.experiment["val/pred_img"].append(File.as_image(post_vis_pred))
+        autoscale_images = cfg.logger.neptune.autoscale_images
+        if i < neptune_n_images and cfg.logger.neptune.save_images:
+            logger.experiment["val/preimg"].append(File.as_image(preimg, autoscale=autoscale_images))
+            logger.experiment["val/preimg_with_masks"].append(File.as_image(pre_vis, autoscale=autoscale_images))
+            logger.experiment["val/post_img"].append(File.as_image(postimg, autoscale=autoscale_images))
+            logger.experiment["val/post_img_with_masks"].append(File.as_image(post_vis, autoscale=autoscale_images))
+            logger.experiment["val/prediction_with_masks"].append(File.as_image(post_vis_pred, autoscale=autoscale_images))
 
         cv2.imwrite(os.path.join(fig_dir, preimg_filename), pre_vis)
         cv2.imwrite(os.path.join(fig_dir, postimg_filename), post_vis)

@@ -1,0 +1,5 @@
+name: siamese_fused
+encoder_name: resnet50
+encoder_weights: imagenet
+decoder_use_batchnorm: true
+fuse: cat
