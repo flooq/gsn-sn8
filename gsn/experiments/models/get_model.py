@@ -1,4 +1,6 @@
+import glob
 import inspect
+import os
 
 import torch
 from omegaconf import DictConfig
@@ -24,6 +26,20 @@ def get_model(cfg: DictConfig):
     print(f"Model {cfg.model.name} with parameters {filtered_data}")
 
     return classname(**filtered_data)
+
+def load_model_from_checkpoint_pattern(cfg, directory, pattern):
+    search_pattern = os.path.join(directory, pattern)
+    matching_files = glob.glob(search_pattern)
+
+    if len(matching_files) == 1:
+        checkpoint_path = matching_files[0]
+        print(f'The matching file is: {checkpoint_path}')
+    elif len(matching_files) == 0:
+        raise ValueError('No files found matching the pattern.')
+    else:
+        raise ValueError('More than one file found. Please check the directory.')
+
+    return load_model_from_checkpoint(cfg, checkpoint_path)
 
 
 def load_model_from_checkpoint(cfg, checkpoint_path):

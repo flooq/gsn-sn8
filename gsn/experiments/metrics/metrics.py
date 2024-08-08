@@ -24,7 +24,7 @@ def get_val_metrics(loss, pred, mask, metrics_by_class: bool = False, prefix: st
     # Calculate precision, recall, and iou
     precision = tp / (tp + fp) if (tp + fp) > 0 else 0
     recall = tp / (tp + fn) if (tp + fn) > 0 else 1
-    iou = tp / (tp + fp + fn) if (tp + fp + fn) > 0 else 1
+    iou = tp / (tp + fp + fn) if (tp + fp + fn) > 0 else 0
 
     metrics = {"iou": iou,
                "precision": precision,

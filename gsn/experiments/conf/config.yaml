@@ -4,15 +4,28 @@
 defaults:
   - _self_
   - loss: cross_entropy # loss in (bce, bce_and_dice, binary_focal, cross_entropy, focal_and_dice, mixed, soft_dice)
-  - model: siamese # model in (baseline, siamese, siamese_fused)
+  - model: siamese_fused # model in (baseline, siamese, siamese_fused)
 
 augment: false
 batch_size: 1
-max_epochs: 50
+max_epochs: 200
 learning_rate: 0.001
 
 ######################################
 ### Below are technical parameters ###
+
+save_images_on_disk: true
+save_images_on_disk_count: 122
+
+logger:
+  neptune:
+    project: 'gsn/gsn'
+    save_images_count: 20
+    save_images: true
+    autoscale_images: false
+    metrics_by_class: true
+
+
 
 project_dir: ${oc.env:GSN_SN8_DIR}
 train_csv: ${project_dir}/inputs/sn8_data_train.csv
@@ -25,12 +38,3 @@ hydra:
     dir: ${project_dir}/outputs/gsn/${now:%Y-%m-%d}/${now:%H-%M-%S}
 output_dir: ${hydra:runtime.output_dir}
 checkpoints_dir: ${hydra:runtime.output_dir}/checkpoints
-save_fig_n_images: 50
-
-logger:
-  neptune:
-    project: 'gsn/gsn'
-    n_images: 10
-    save_images: true
-    autoscale_images: true
-    metrics_by_class: true

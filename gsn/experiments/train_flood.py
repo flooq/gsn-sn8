@@ -6,12 +6,13 @@ import torch
 from omegaconf import DictConfig
 from pytorch_lightning.callbacks import TQDMProgressBar
 
+from experiments.callbacks.get_callbacks import get_callbacks
+from experiments.callbacks.model_checkpoints import get_model_best_iou_checkpoint_pattern
 from experiments.datasets.datamodule import SN8DataModule
-from experiments.callbacks.model_checkpoints import get_checkpoint
-from experiments.visualize.visualize import save_eval_fig
+from experiments.visualize.visualize import save_eval_fig_on_disk, save_eval_fig_in_neptune
 from loggers.loggers import get_logger
 from loss.get_loss import get_loss
-from models.get_model import get_model, load_model_from_checkpoint
+from models.get_model import get_model, load_model_from_checkpoint, load_model_from_checkpoint_pattern
 from trainer.flood_trainer import FloodTrainer
 
 
@@ -32,16 +33,20 @@ def train_flood(cfg: DictConfig) -> None:
         max_epochs=cfg.max_epochs,
         default_root_dir=cfg.output_dir,
         logger=logger,
-        callbacks=[get_checkpoint(cfg), TQDMProgressBar(refresh_rate=10)]
+        callbacks=get_callbacks(cfg)
     )
 
     data_module = SN8DataModule(train_csv=cfg.train_csv, val_csv=cfg.val_csv, batch_size=cfg.batch_size, augment=cfg.augment)
     trainer.fit(flood_trainer, datamodule=data_module)
 
+    best_checkpoint_path = get_model_best_iou_checkpoint_pattern()
+    print(f'Loading from checkpoint {best_checkpoint_path}')
+    model_from_checkpoint = load_model_from_checkpoint_pattern(cfg, cfg.checkpoints_dir, best_checkpoint_path)
+    if cfg.save_images_on_disk:
+        save_eval_fig_on_disk(cfg, model_from_checkpoint, 'flood_eval_fig')
+
     if cfg.logger.neptune.save_images:
-        checkpoint_path = os.path.join(cfg.checkpoints_dir, 'checkpoint.ckpt')
-        model_from_checkpoint = load_model_from_checkpoint(cfg, checkpoint_path)
-        save_eval_fig(cfg, model_from_checkpoint, logger)
+        save_eval_fig_in_neptune(cfg, model_from_checkpoint, logger)
 
 
 if __name__ == "__main__":
