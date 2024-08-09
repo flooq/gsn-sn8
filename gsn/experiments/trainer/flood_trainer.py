@@ -4,6 +4,8 @@ import torch
 from metrics.metrics import get_val_metrics
 from metrics.metrics import get_train_metrics
 
+from experiments.schedulers.get_scheduler import get_scheduler
+
 
 class FloodTrainer(pl.LightningModule):
     def __init__(self, loss, model, cfg):
@@ -43,7 +45,7 @@ class FloodTrainer(pl.LightningModule):
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.cfg.learning_rate)
-        scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=30, gamma=0.8)
+        scheduler = get_scheduler(optimizer, self.cfg)
         return [optimizer], [scheduler]
 
     def _do_step(self, batch):
