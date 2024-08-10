@@ -1,0 +1,6 @@
+name: neptune
+project: 'gsn/gsn'
+save_images_count: 5
+save_images: false
+autoscale_images: false
+metrics_by_class: true

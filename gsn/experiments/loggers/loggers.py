@@ -5,6 +5,9 @@ import pytorch_lightning as pl
 
 
 def get_logger(cfg: DictConfig):
+    if cfg.logger.name == 'csv':
+        return pl.loggers.CSVLogger(save_dir=cfg.output_dir, name='csv_logger')
+
     tags = [
         cfg.model.name,
         cfg.loss.name,
@@ -16,7 +19,7 @@ def get_logger(cfg: DictConfig):
 
     logger = pl.loggers.neptune.NeptuneLogger(
         api_key=os.environ["NEPTUNE_API_TOKEN"],
-        project=cfg.logger.neptune.project,
+        project=cfg.logger.project,
         log_model_checkpoints=False,
         tags=tags
     )

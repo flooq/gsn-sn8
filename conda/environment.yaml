@@ -26,4 +26,4 @@ dependencies:
       - opencv-python
       - hydra-core
       - opencv-contrib-python==4.10.0.84
-      - albumentations==1.4.8
+      - albumentations #==1.4.8
