@@ -49,7 +49,7 @@ class UNetSiameseBaseline(nn.Module):
             x = torch.cat([out1, out2], dim=1)
             x = self.penultimate_conv(x)
             x = self.outc1(x)
-            return x
+            return x, None
         else:
             out1 = self.forward_once(x1)
             out2 = self.forward_once(x2)

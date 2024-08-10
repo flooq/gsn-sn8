@@ -5,6 +5,7 @@ import torch
 from metrics.metrics import get_val_metrics
 from metrics.metrics import get_train_metrics
 from scipy.ndimage import distance_transform_edt
+from torch import nn
 
 from experiments.schedulers.get_scheduler import get_scheduler
 
@@ -13,10 +14,16 @@ class FloodTrainer(pl.LightningModule):
     def __init__(self, loss, model, cfg):
         super(FloodTrainer, self).__init__()
         self.loss = loss
+        self.class_loss = nn.BCEWithLogitsLoss()
         self.model = model
         self.cfg = cfg
         self.train_loss_sum = 0.0
         self.train_sample_count = 0
+        if hasattr(cfg.model, 'distance_transform'):
+            self.distance_transform_enabled = cfg.model.distance_transform.enabled
+        else:
+            self.distance_transform_enabled = False
+
 
     def forward(self, x):
         return self.model(x)
@@ -52,15 +59,21 @@ class FloodTrainer(pl.LightningModule):
 
     def _do_step(self, batch):
         preimg, postimg, building, road, roadspeed, flood = batch
-        flood_pred = self.model(preimg, postimg)
-        if self.cfg.distance_transform:
+        flood_pred, class_pred = self.model(preimg, postimg)
+        distance_transform_weight = self.cfg.model.distance_transform.weight if self.distance_transform_enabled else 0
+        flood_classification_weight = self.cfg.model.flood_classification.weight if class_pred is not None else 0
+        main_weight = 1 - (distance_transform_weight + flood_classification_weight)
+
+        flood_with_background = self._get_flood_with_background(flood)
+        _loss = main_weight * self.loss(flood_pred, flood_with_background)
+        if self.distance_transform_enabled:
             distance_transform_flood = self._get_distance_transform_flood_mask(flood)
-            flood = self._get_flood_mask(flood)
-            flood_dt = self._get_flood_mask(distance_transform_flood)
-            _loss = self.loss(flood_pred, flood) + self.loss(flood_pred, flood_dt)
-        else:
-            flood = self._get_flood_mask(flood)
-            _loss = self.loss(flood_pred, flood)
+            flood_dt_with_background = self._get_flood_with_background(distance_transform_flood)
+            _loss +=  distance_transform_weight*self.loss(flood_pred, flood_dt_with_background)
+        if class_pred is not None:
+            class_mask = self._get_class_mask(flood)
+            _loss +=  flood_classification_weight*self.class_loss(class_pred, class_mask)
+
         return _loss, flood_pred, flood
 
     # I tried with kornia but this implementation is faster despite moving tensor to cpu
@@ -70,16 +83,27 @@ class FloodTrainer(pl.LightningModule):
         distance_transforms = np.zeros_like(flood_np)
         for i in range(flood_np.shape[0]):  # iterate over batch
             for j in range(flood_np.shape[1]):  # iterate over the 4 masks
-                distance_transforms[i, j] = distance_transform_edt(flood_np[i, j])
+                distance_transform = distance_transform_edt(flood_np[i, j])
+                # Normalize distance transform
+                max_distance = distance_transform.max()
+                if max_distance > 0:
+                    distance_transform /= max_distance
+                distance_transforms[i, j] = distance_transform
+                #distance_transforms[i, j] = distance_transform_edt(flood_np[i, j])
         distance_transforms_tensor = torch.from_numpy(distance_transforms).to(flood_batch.device)
         return distance_transforms_tensor
 
     @staticmethod
-    def _get_flood_mask(flood_batch):
+    def _get_flood_with_background(flood_batch):
         background_mask = torch.sum(flood_batch, dim=1, keepdim=True) == 0
         background_mask = background_mask.long()
         combined_flood_mask = torch.cat((background_mask, flood_batch), dim=1)
         return combined_flood_mask
 
-
-
+    @staticmethod
+    def _get_class_mask(flood_batch):
+        flooded_channels = flood_batch[:, [1, 3], :, :] # only flooded channels
+        summed_spatial_tensor = torch.sum(flooded_channels, dim=[2, 3])
+        summed_channel_tensor = torch.sum(summed_spatial_tensor, dim=1)
+        class_mask = (summed_channel_tensor > 0).float().unsqueeze(1)
+        return class_mask

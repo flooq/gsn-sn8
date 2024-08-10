@@ -57,7 +57,7 @@ class UnetSiamese(nn.Module):
         x = self.penultimate_conv(features)
         x = self.outc1(x)
 
-        return x
+        return x, None
 
     @torch.no_grad()
     def predict(self, x1, x2):

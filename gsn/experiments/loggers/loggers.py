@@ -12,7 +12,8 @@ def get_logger(cfg: DictConfig):
         cfg.model.name,
         cfg.loss.name,
         'augment' if cfg.augment else None,
-        'distance_transform' if cfg.distance_transform else None,
+        'distance_transform' if is_distance_transform(cfg) else None,
+        'flood_classification' if is_flood_classification(cfg) else None,
         f"lr={cfg.learning_rate}",
         f"batch={cfg.batch_size}"
     ]
@@ -27,3 +28,15 @@ def get_logger(cfg: DictConfig):
     cfg_dict = OmegaConf.to_container(cfg, resolve=True)
     logger.log_hyperparams(cfg_dict)
     return logger
+
+def is_distance_transform(cfg):
+    if hasattr(cfg.model, 'distance_transform'):
+        return cfg.model.distance_transform.enabled
+    else:
+        return False
+
+def is_flood_classification(cfg):
+    if hasattr(cfg.model, 'flood_classification'):
+        return cfg.model.flood_classification.enabled
+    else:
+        return False

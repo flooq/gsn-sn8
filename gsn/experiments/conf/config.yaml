@@ -3,17 +3,17 @@
 
 defaults:
   - _self_
-  - loss: lovasz # loss in (bce, bce_and_dice, binary_focal, cross_entropy, dice, focal, focal_and_dice, lovasz, mixed, soft_dice)
+  - loss: mixed # loss in (bce, bce_and_dice, binary_focal, cross_entropy, dice, focal, focal_and_dice, lovasz, mixed, soft_dice)
   - model: siamese_fused # model in (baseline, siamese, siamese_fused)
   - scheduler: step_lr # scheduler in (step_lr)
   - logger: neptune # logger in (csv, neptune)
 
-distance_transform: false
 augment: false
 batch_size: 1
+
 # each epoch training time on RTX4090:
 # [siamese, siamese_fused] 2 minutes
-# [baseline] 5 minutes
+# [baseline] 4 minutes
 # if distance_transform then training time multiply by 2
 max_epochs: 300
 learning_rate: 0.0001

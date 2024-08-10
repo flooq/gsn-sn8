@@ -19,7 +19,7 @@ COLORS = {
 
 def save_eval_fig_in_neptune(cfg: DictConfig, model_from_checkpoint, logger):
     dataset = SN8Dataset(cfg.val_csv, data_to_load=["preimg","postimg","building","road","flood"])
-    save_images_count = cfg.logger.neptune.save_images_count
+    save_images_count = cfg.logger.save_images_count
     n_images = min(save_images_count, len(dataset))
     for i in range(n_images):
         try:
@@ -29,7 +29,7 @@ def save_eval_fig_in_neptune(cfg: DictConfig, model_from_checkpoint, logger):
             continue
 
         with torch.no_grad():
-            output = model_from_checkpoint(preimg.unsqueeze(0), postimg.unsqueeze(0))
+            output, class_pred = model_from_checkpoint(preimg.unsqueeze(0), postimg.unsqueeze(0))
             max_indices = torch.argmax(output, dim=1, keepdim=True)
             one_hot_tensor = torch.zeros_like(output).scatter_(1, max_indices, 1)
             flood_pred = one_hot_tensor[:, 1:, :, :].squeeze(0)
@@ -42,13 +42,15 @@ def save_eval_fig_in_neptune(cfg: DictConfig, model_from_checkpoint, logger):
         building = torch.squeeze(building).numpy().astype(bool)
         pre_vis = draw_preimage(preimg.clone().numpy(), road, building)
         post_vis = draw_postimage(postimg.clone().numpy(), flood)
+        pre_vis_pred = draw_postimage(preimg.clone().numpy(), flood_pred)
         post_vis_pred = draw_postimage(postimg.clone().numpy(), flood_pred)
-        autoscale_images = cfg.logger.neptune.autoscale_images
+        autoscale_images = cfg.logger.autoscale_images
         logger.experiment["val/preimg"].append(File.as_image(preimg.clone().numpy(), autoscale=autoscale_images))
         logger.experiment["val/preimg_with_masks"].append(File.as_image(pre_vis, autoscale=autoscale_images))
         logger.experiment["val/post_img"].append(File.as_image(postimg.clone().numpy(), autoscale=autoscale_images))
         logger.experiment["val/post_img_with_masks"].append(File.as_image(post_vis, autoscale=autoscale_images))
-        logger.experiment["val/prediction_with_masks"].append(File.as_image(post_vis_pred, autoscale=autoscale_images))
+        logger.experiment["val/prediction_with_masks_on_pre"].append(File.as_image(pre_vis_pred, autoscale=autoscale_images))
+        logger.experiment["val/prediction_with_masks_on_post"].append(File.as_image(post_vis_pred, autoscale=autoscale_images))
 
 
 def save_eval_fig_on_disk(cfg: DictConfig, model_from_checkpoint, dir_name):
@@ -64,7 +66,9 @@ def save_eval_fig_on_disk(cfg: DictConfig, model_from_checkpoint, dir_name):
             continue
 
         with torch.no_grad():
-            output = model_from_checkpoint(preimg.unsqueeze(0), postimg.unsqueeze(0))
+            output, class_pred = model_from_checkpoint(preimg.unsqueeze(0), postimg.unsqueeze(0))
+            if class_pred is not None:
+                print(f'Flood prediction for image {dataset.files[i]["preimg"]} is {torch.sigmoid(class_pred).item()}')
             max_indices = torch.argmax(output, dim=1, keepdim=True)
             one_hot_tensor = torch.zeros_like(output).scatter_(1, max_indices, 1)
             flood_pred = one_hot_tensor[:, 1:, :, :].squeeze(0)
@@ -77,25 +81,25 @@ def save_eval_fig_on_disk(cfg: DictConfig, model_from_checkpoint, dir_name):
         building = torch.squeeze(building).numpy().astype(bool)
         pre_vis = draw_preimage(preimg.clone().numpy(), road, building)
         post_vis = draw_postimage(postimg.clone().numpy(), flood)
+        pre_vis_pred = draw_postimage(preimg.clone().numpy(), flood_pred)
         post_vis_pred = draw_postimage(postimg.clone().numpy(), flood_pred)
         preimg_filename = dataset.files[i]["preimg"].split("/")[-1].replace(".tif", "_PRE.png")
         preimg_filename_with_masks = dataset.files[i]["preimg"].split("/")[-1].replace(".tif", "_PRE_with_masks.png")
         postimg_filename = dataset.files[i]["preimg"].split("/")[-1].replace(".tif", "_POST.png")
         postimg_filename_with_masks = dataset.files[i]["preimg"].split("/")[-1].replace(".tif", "_POST_with_masks.png")
+        preimg_pred_filename_with_masks = dataset.files[i]["preimg"].split("/")[-1].replace(".tif", "_PRE_PRED_with_masks.png")
         postimg_pred_filename_with_masks = dataset.files[i]["preimg"].split("/")[-1].replace(".tif", "_POST_PRED_with_masks.png")
         cv2.imwrite(os.path.join(fig_dir, preimg_filename), preimg.clone().numpy())
         cv2.imwrite(os.path.join(fig_dir, preimg_filename_with_masks), pre_vis)
         cv2.imwrite(os.path.join(fig_dir, postimg_filename), postimg.clone().numpy())
         cv2.imwrite(os.path.join(fig_dir, postimg_filename_with_masks), post_vis)
+        cv2.imwrite(os.path.join(fig_dir, preimg_pred_filename_with_masks), pre_vis_pred)
         cv2.imwrite(os.path.join(fig_dir, postimg_pred_filename_with_masks), post_vis_pred)
 
 def draw_mask(img, mask, mask_type):
-    # first implementation
     color = np.array(COLORS[mask_type])
     #img[mask] = (img[mask] * 0.5 + color * 0.5).astype(np.uint8)
     img[mask] = color.astype(np.uint8)
-
-
 
 def draw_preimage(img, road, building):
     draw_mask(img, road, "road")

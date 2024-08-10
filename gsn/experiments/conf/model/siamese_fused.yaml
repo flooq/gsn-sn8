@@ -3,3 +3,10 @@ encoder_name: resnet50
 encoder_weights: imagenet
 decoder_use_batchnorm: true
 fuse: cat
+
+flood_classification:  # classification flooded/non-flooded
+  enabled: true
+  weight: 0.25
+distance_transform:
+  enabled: false
+  weight: 0.25

@@ -3,6 +3,7 @@ from typing import Optional, List
 import torch
 import torch.nn as nn
 from segmentation_models_pytorch.base import SegmentationHead
+from segmentation_models_pytorch.base import ClassificationHead
 from segmentation_models_pytorch.base import initialization as init
 from segmentation_models_pytorch.decoders.unet.decoder import UnetDecoder
 from segmentation_models_pytorch.encoders import get_encoder
@@ -11,6 +12,7 @@ from segmentation_models_pytorch.encoders import get_encoder
 class UnetSiameseFused(nn.Module):
     def __init__(
             self,
+            flood_classification: dict,
             encoder_name: str = "resnet50",
             encoder_depth: int = 5,
             encoder_weights: Optional[str] = "imagenet",
@@ -78,12 +80,17 @@ class UnetSiameseFused(nn.Module):
             in_channels=decoder_channels[-1],
             out_channels=num_classes, activation=None, kernel_size=3)
 
+        if flood_classification['enabled']:
+            self.classification_head = ClassificationHead(in_channels=self.encoder.out_channels[-1],  classes=1)
+
         self.name = "u-{}".format(encoder_name)
         self.initialize()
 
     def initialize(self):
         init.initialize_decoder(self.decoder)
         init.initialize_head(self.segmentation_head)
+        if self.classification_head is not None:
+            init.initialize_head(self.classification_head)
         for i in range(6):
             init.initialize_decoder(self.projs[i])
 
@@ -98,7 +105,6 @@ class UnetSiameseFused(nn.Module):
                 final_features.append(self.projs[i][0](enc_fusion))
             elif self.fuse == 'add':
                 enc_fusion = enc_1[i] + enc_2[i]
-                #final_features.append(self.projs[i][0](enc_fusion))
                 final_features.append(enc_fusion)
 
             elif self.fuse == 'cat_add':
@@ -108,8 +114,14 @@ class UnetSiameseFused(nn.Module):
                 final_features.append(enc_fusion)
 
         decoder_output = self.decoder(*final_features)
-        change = self.segmentation_head(decoder_output)
-        return change
+        out_segmentation = self.segmentation_head(decoder_output)
+
+        if self.classification_head is not None:
+            out_classification = self.classification_head(final_features[-1])
+            return out_segmentation, out_classification
+        else:
+            return out_segmentation, None
+
 
     def predict(self, x1, x2):
         if self.training:
