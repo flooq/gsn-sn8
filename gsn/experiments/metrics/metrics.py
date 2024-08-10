@@ -25,10 +25,14 @@ def get_val_metrics(loss, pred, mask, metrics_by_class: bool = False, prefix: st
     precision = tp / (tp + fp) if (tp + fp) > 0 else 0
     recall = tp / (tp + fn) if (tp + fn) > 0 else 1
     iou = tp / (tp + fp + fn) if (tp + fp + fn) > 0 else 0
+    f1 = _get_f1(precision,recall)
+    dice = 2 * tp / (2 * tp + fp + fn) if (2 * tp + fp + fn) > 0 else 0
 
     metrics = {"iou": iou,
                "precision": precision,
                "recall": recall,
+               "f1": f1,
+               "dice": dice,
                "loss": loss}
 
     if metrics_by_class:
@@ -46,13 +50,19 @@ def get_val_metrics(loss, pred, mask, metrics_by_class: bool = False, prefix: st
 
             precision_class = tp_class / (tp_class + fp_class) if (tp_class + fp_class) > 0 else 1
             recall_class = tp_class / (tp_class + fn_class) if (tp_class + fn_class) > 0 else 1
-            accuracy_class = tp_class / (tp_class + fp_class + fn_class) if (tp_class + fp_class + fn_class) > 0 else 1
+            iou_class = tp_class / (tp_class + fp_class + fn_class) if (tp_class + fp_class + fn_class) > 0 else 1
+            f1_class = _get_f1(precision_class,recall_class)
+            dice_class = 2 * tp / (2 * tp + fp + fn) if (2 * tp + fp + fn) > 0 else 0
 
             metrics[f"{class_name}_precision"] = precision_class
             metrics[f"{class_name}_recall"] = recall_class
-            metrics[f"{class_name}_iou"] = accuracy_class
+            metrics[f"{class_name}_iou"] = iou_class
+            metrics[f"{class_name}_f1"] = f1_class
+            metrics[f"{class_name}_dice"] = dice_class
 
     data = {}
     data.update({f"{prefix}/{metric}": metrics[metric] for metric in metrics})
     return data
 
+def _get_f1(precision, recall):
+    return 2 * precision * recall / (precision + recall) if (precision + recall) > 0 else 0
