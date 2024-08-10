@@ -14,7 +14,7 @@ class FloodTrainer(pl.LightningModule):
     def __init__(self, loss, model, cfg):
         super(FloodTrainer, self).__init__()
         self.loss = loss
-        self.class_loss = nn.BCEWithLogitsLoss()
+        self.class_loss = nn.BCEWithLogitsLoss(pos_weight=torch.tensor([1000.0]))
         self.model = model
         self.cfg = cfg
         self.train_loss_sum = 0.0
@@ -23,7 +23,19 @@ class FloodTrainer(pl.LightningModule):
             self.distance_transform_enabled = cfg.model.distance_transform.enabled
         else:
             self.distance_transform_enabled = False
-
+        self.distance_transform_weight = cfg.model.distance_transform.weight if self.distance_transform_enabled else 0
+        print(f"Distance transform weight: {self.distance_transform_weight}")
+        if hasattr(cfg.model, 'flood_classification'):
+            self.flood_classification_enabled = cfg.model.flood_classification.enabled
+        else:
+            self.flood_classification_enabled = False
+        self.flood_classification_weight = cfg.model.flood_classification.initial_weight if self.flood_classification_enabled else 0
+        self.flood_classification_increase_every_n_epochs = cfg.model.flood_classification.increase_every_n_epochs if self.flood_classification_enabled else None
+        self.flood_classification_increase_factor = cfg.model.flood_classification.increase_factor if self.flood_classification_enabled else None
+        self.flood_classification_max_weight = cfg.model.flood_classification.max_weight if self.flood_classification_enabled else None
+        print(f"Initial flood classification weight: {self.flood_classification_weight}")
+        self.main_weight = 1 - (self.distance_transform_weight + self.flood_classification_weight)
+        self.epoch = 0
 
     def forward(self, x):
         return self.model(x)
@@ -47,6 +59,8 @@ class FloodTrainer(pl.LightningModule):
         self.train_sample_count = 0
 
     def on_train_epoch_end(self):
+        self.epoch += 1
+        self._increase_flood_classification_weight()
         # Log the summed loss at the end of the epoch
         train_loss = self.train_loss_sum/self.train_sample_count
         metrics = get_train_metrics(train_loss)
@@ -60,21 +74,36 @@ class FloodTrainer(pl.LightningModule):
     def _do_step(self, batch):
         preimg, postimg, building, road, roadspeed, flood = batch
         flood_pred, class_pred = self.model(preimg, postimg)
-        distance_transform_weight = self.cfg.model.distance_transform.weight if self.distance_transform_enabled else 0
-        flood_classification_weight = self.cfg.model.flood_classification.weight if class_pred is not None else 0
-        main_weight = 1 - (distance_transform_weight + flood_classification_weight)
 
         flood_with_background = self._get_flood_with_background(flood)
-        _loss = main_weight * self.loss(flood_pred, flood_with_background)
+        _loss = self.main_weight * self.loss(flood_pred, flood_with_background)
+        # print(f"Main Loss: {_loss.item()}")
         if self.distance_transform_enabled:
             distance_transform_flood = self._get_distance_transform_flood_mask(flood)
             flood_dt_with_background = self._get_flood_with_background(distance_transform_flood)
-            _loss +=  distance_transform_weight*self.loss(flood_pred, flood_dt_with_background)
+            distance_transform_loss =  self.distance_transform_weight*self.loss(flood_pred, flood_dt_with_background)
+            _loss += distance_transform_loss
+            #print(f"Distance Transform Loss: {distance_transform_loss.item()}")
         if class_pred is not None:
             class_mask = self._get_class_mask(flood)
-            _loss +=  flood_classification_weight*self.class_loss(class_pred, class_mask)
+            class_loss_value =  self.flood_classification_weight*self.class_loss(class_pred, class_mask)
+            _loss += class_loss_value
+            #print(f"Classification Loss: {class_loss_value.item()}")
 
+        #print(f"Total Loss: {_loss.item()}")
         return _loss, flood_pred, flood
+
+    def _increase_flood_classification_weight(self):
+        if (self.flood_classification_enabled and
+                self.flood_classification_weight < self.flood_classification_max_weight and
+                self.epoch > 0 and
+                self.epoch % self.flood_classification_increase_every_n_epochs == 0):
+            self.flood_classification_weight *= self.flood_classification_increase_factor
+            if self.flood_classification_weight > self.flood_classification_max_weight:
+                self.flood_classification_weight = self.flood_classification_max_weight
+            self.main_weight = 1 - (self.distance_transform_weight + self.flood_classification_weight)
+            print(f"\nNew flood classification weight: {self.flood_classification_weight}")
+            print(f"\nNew main weight: {self.main_weight}")
 
     # I tried with kornia but this implementation is faster despite moving tensor to cpu
     @staticmethod

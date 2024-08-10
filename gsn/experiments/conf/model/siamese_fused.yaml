@@ -6,7 +6,11 @@ fuse: cat
 
 flood_classification:  # classification flooded/non-flooded
   enabled: true
-  weight: 0.25
+  initial_weight: 0.001
+  max_weight: 0.25
+  increase_factor: 2
+  increase_every_n_epochs: 3
+
 distance_transform:
   enabled: false
   weight: 0.25

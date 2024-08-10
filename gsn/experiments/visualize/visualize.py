@@ -68,7 +68,8 @@ def save_eval_fig_on_disk(cfg: DictConfig, model_from_checkpoint, dir_name):
         with torch.no_grad():
             output, class_pred = model_from_checkpoint(preimg.unsqueeze(0), postimg.unsqueeze(0))
             if class_pred is not None:
-                print(f'Flood prediction for image {dataset.files[i]["preimg"]} is {torch.sigmoid(class_pred).item()}')
+                print(f'Flood prediction for image {dataset.files[i]["preimg"]} is {torch.sigmoid(class_pred).item()} and ground truth is {_get_class_mask(flood).item()}')
+
             max_indices = torch.argmax(output, dim=1, keepdim=True)
             one_hot_tensor = torch.zeros_like(output).scatter_(1, max_indices, 1)
             flood_pred = one_hot_tensor[:, 1:, :, :].squeeze(0)
@@ -115,3 +116,11 @@ def draw_postimage(img, flood):
 
 def flood_mask(flood, idx):
     return flood.numpy()[idx, :, :].astype(bool)
+
+# copied from flood_trainer TODO extract/refactor
+def _get_class_mask(flood_batch):
+    flooded_channels = flood_batch[:, [1, 3], :, :] # only flooded channels
+    summed_spatial_tensor = torch.sum(flooded_channels, dim=[2, 3])
+    summed_channel_tensor = torch.sum(summed_spatial_tensor, dim=1)
+    class_mask = (summed_channel_tensor > 0).float().unsqueeze(1)
+    return class_mask
