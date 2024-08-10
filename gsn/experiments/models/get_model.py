@@ -49,7 +49,7 @@ def load_model_from_checkpoint(cfg, checkpoint_path):
 
 
 def _state_dict(checkpoint_path):
-    checkpoint = torch.load(checkpoint_path, map_location=torch.device('cpu'))
+    checkpoint = torch.load(checkpoint_path, map_location=torch.device('cpu'), weights_only=True)
     new_state_dict = {}
     for key, value in checkpoint['state_dict'].items():
         if key.startswith('model.'):
