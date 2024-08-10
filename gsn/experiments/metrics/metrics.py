@@ -6,7 +6,7 @@ def get_train_metrics(loss, prefix: str = 'train'):
     return metrics
 
 
-def get_val_metrics(loss, pred, mask, metrics_by_class: bool = False, prefix: str = 'val'):
+def get_val_metrics(loss, class_loss, pred, mask, metrics_by_class: bool = False, prefix: str = 'val'):
     assert pred.shape[1] == 5, f"Invalid flood prediction shape: {pred.shape}"
 
     # Convert predictions to class labels
@@ -34,6 +34,9 @@ def get_val_metrics(loss, pred, mask, metrics_by_class: bool = False, prefix: st
                "f1": f1,
                "dice": dice,
                "loss": loss}
+
+    if class_loss is not None:
+        metrics["class_loss"] = class_loss
 
     if metrics_by_class:
         class_labels = {

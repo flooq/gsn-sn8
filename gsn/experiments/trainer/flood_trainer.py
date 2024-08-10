@@ -14,7 +14,7 @@ class FloodTrainer(pl.LightningModule):
     def __init__(self, loss, model, cfg):
         super(FloodTrainer, self).__init__()
         self.loss = loss
-        self.class_loss = nn.BCEWithLogitsLoss(pos_weight=torch.tensor([1000.0]))
+        self.class_loss = nn.BCEWithLogitsLoss()
         self.model = model
         self.cfg = cfg
         self.train_loss_sum = 0.0
@@ -35,21 +35,22 @@ class FloodTrainer(pl.LightningModule):
         self.flood_classification_max_weight = cfg.model.flood_classification.max_weight if self.flood_classification_enabled else None
         print(f"Initial flood classification weight: {self.flood_classification_weight}")
         self.main_weight = 1 - (self.distance_transform_weight + self.flood_classification_weight)
+        print(f"Main weight: {self.main_weight}")
         self.epoch = 0
 
     def forward(self, x):
         return self.model(x)
 
     def training_step(self, batch, batch_idx):
-        _loss, _, _ = self._do_step(batch)
+        _loss, _, _, _ = self._do_step(batch)
         self.train_loss_sum += _loss.item()
         self.train_sample_count += 1
         return _loss
 
     def validation_step(self, batch, batch_idx):
-        _loss, flood_pred, flood = self._do_step(batch)
+        _loss, class_loss, flood_pred, flood = self._do_step(batch)
         metrics_by_class = self.cfg.logger.metrics_by_class
-        metrics = get_val_metrics(_loss, flood_pred, flood, metrics_by_class)
+        metrics = get_val_metrics(_loss, class_loss, flood_pred, flood, metrics_by_class)
         self.log_dict(metrics)
         return _loss
 
@@ -67,7 +68,7 @@ class FloodTrainer(pl.LightningModule):
         self.log_dict(metrics)
 
     def configure_optimizers(self):
-        optimizer = torch.optim.Adam(self.parameters(), lr=self.cfg.learning_rate)
+        optimizer = torch.optim.Adam(self.parameters(), lr=self.cfg.learning_rate, weight_decay=self.cfg.weight_decay)
         scheduler = get_scheduler(optimizer, self.cfg)
         return [optimizer], [scheduler]
 
@@ -84,14 +85,17 @@ class FloodTrainer(pl.LightningModule):
             distance_transform_loss =  self.distance_transform_weight*self.loss(flood_pred, flood_dt_with_background)
             _loss += distance_transform_loss
             #print(f"Distance Transform Loss: {distance_transform_loss.item()}")
-        if class_pred is not None:
+        class_loss_value = None
+        if self.flood_classification_enabled:
+            if class_pred is None:
+                raise ValueError(f"Model {self.cfg.model.name} does not have a classification head!")
             class_mask = self._get_class_mask(flood)
-            class_loss_value =  self.flood_classification_weight*self.class_loss(class_pred, class_mask)
+            class_loss_value = self.flood_classification_weight*self.class_loss(class_pred, class_mask)
             _loss += class_loss_value
             #print(f"Classification Loss: {class_loss_value.item()}")
 
         #print(f"Total Loss: {_loss.item()}")
-        return _loss, flood_pred, flood
+        return _loss, class_loss_value, flood_pred, flood_with_background
 
     def _increase_flood_classification_weight(self):
         if (self.flood_classification_enabled and
@@ -103,7 +107,7 @@ class FloodTrainer(pl.LightningModule):
                 self.flood_classification_weight = self.flood_classification_max_weight
             self.main_weight = 1 - (self.distance_transform_weight + self.flood_classification_weight)
             print(f"\nNew flood classification weight: {self.flood_classification_weight}")
-            print(f"\nNew main weight: {self.main_weight}")
+            print(f"New main weight: {self.main_weight}")
 
     # I tried with kornia but this implementation is faster despite moving tensor to cpu
     @staticmethod
