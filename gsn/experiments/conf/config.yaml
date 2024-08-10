@@ -8,6 +8,7 @@ defaults:
   - scheduler: step_lr # scheduler in (step_lr)
   - logger: neptune # logger in (csv, neptune)
 
+distance_transform: false
 augment: false
 batch_size: 1
 # each epoch training time on RTX4090:
