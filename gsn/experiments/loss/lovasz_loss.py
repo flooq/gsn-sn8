@@ -7,6 +7,6 @@ class Lovasz(nn.Module):
         super().__init__()
         self.loss = smp.losses.LovaszLoss(mode=mode)
 
-    def forward(self, input, target):
-        loss = self.loss(input, target)
+    def forward(self, inputs, targets):
+        loss = self.loss(inputs, targets)
         return loss

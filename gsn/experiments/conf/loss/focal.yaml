@@ -1,0 +1,5 @@
+name: focal
+mode: binary
+alpha: 1
+gamma: 2
+reduction: 'mean'

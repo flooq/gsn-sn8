@@ -6,7 +6,9 @@ from experiments.loss.bce_and_dice import BceAndDice
 from experiments.loss.bce_loss import BCE
 from experiments.loss.binary_focal_loss import BinaryFocalLoss
 from experiments.loss.cross_entropy_loss import CrossEntropy
+from experiments.loss.dice_loss import Dice
 from experiments.loss.focal_and_dice import FocalAndDice
+from experiments.loss.focal_loss import Focal
 from experiments.loss.lovasz_loss import Lovasz
 from experiments.loss.mixed_loss import MixedLoss
 from experiments.loss.soft_dice_loss import SoftDiceLoss
@@ -19,6 +21,8 @@ def get_loss(cfg: DictConfig):
         'bce': BCE,
         'binary_focal': BinaryFocalLoss,
         'cross_entropy': CrossEntropy,
+        'dice': Dice,
+        'focal': Focal,
         'focal_and_dice': FocalAndDice,
         'lovasz': Lovasz,
         'mixed': MixedLoss,
