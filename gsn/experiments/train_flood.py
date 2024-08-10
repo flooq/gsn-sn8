@@ -1,10 +1,8 @@
-import os
 import env
 import hydra
 import pytorch_lightning as pl
 import torch
 from omegaconf import DictConfig
-from pytorch_lightning.callbacks import TQDMProgressBar
 
 from experiments.callbacks.get_callbacks import get_callbacks
 from experiments.callbacks.model_checkpoints import get_model_best_iou_checkpoint_pattern
@@ -12,7 +10,7 @@ from experiments.datasets.datamodule import SN8DataModule
 from experiments.visualize.visualize import save_eval_fig_on_disk, save_eval_fig_in_neptune
 from loggers.loggers import get_logger
 from loss.get_loss import get_loss
-from models.get_model import get_model, load_model_from_checkpoint, load_model_from_checkpoint_pattern
+from models.get_model import get_model, load_model_from_checkpoint_pattern
 from trainer.flood_trainer import FloodTrainer
 
 

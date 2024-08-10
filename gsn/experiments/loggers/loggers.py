@@ -12,6 +12,7 @@ def get_logger(cfg: DictConfig):
         cfg.model.name,
         cfg.loss.name,
         'augment' if cfg.augment else None,
+        'distance_transform' if cfg.distance_transform else None,
         f"lr={cfg.learning_rate}",
         f"batch={cfg.batch_size}"
     ]
@@ -20,7 +21,7 @@ def get_logger(cfg: DictConfig):
     logger = pl.loggers.neptune.NeptuneLogger(
         api_key=os.environ["NEPTUNE_API_TOKEN"],
         project=cfg.logger.project,
-        log_model_checkpoints=False,
+        log_model_checkpoints=cfg.logger.log_model_checkpoints,
         tags=tags
     )
     cfg_dict = OmegaConf.to_container(cfg, resolve=True)

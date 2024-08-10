@@ -52,7 +52,6 @@ class FloodTrainer(pl.LightningModule):
 
     def _do_step(self, batch):
         preimg, postimg, building, road, roadspeed, flood = batch
-
         flood_pred = self.model(preimg, postimg)
         if self.cfg.distance_transform:
             distance_transform_flood = self._get_distance_transform_flood_mask(flood)
@@ -65,7 +64,8 @@ class FloodTrainer(pl.LightningModule):
         return _loss, flood_pred, flood
 
     # I tried with kornia but this implementation is faster despite moving tensor to cpu
-    def _get_distance_transform_flood_mask(self, flood_batch):
+    @staticmethod
+    def _get_distance_transform_flood_mask(flood_batch):
         flood_np = flood_batch.cpu().numpy()
         distance_transforms = np.zeros_like(flood_np)
         for i in range(flood_np.shape[0]):  # iterate over batch
@@ -74,9 +74,10 @@ class FloodTrainer(pl.LightningModule):
         distance_transforms_tensor = torch.from_numpy(distance_transforms).to(flood_batch.device)
         return distance_transforms_tensor
 
-    def _get_flood_mask(self, flood_batch):
+    @staticmethod
+    def _get_flood_mask(flood_batch):
         background_mask = torch.sum(flood_batch, dim=1, keepdim=True) == 0
-        background_mask = background_mask.long() # ^ 0
+        background_mask = background_mask.long()
         combined_flood_mask = torch.cat((background_mask, flood_batch), dim=1)
         return combined_flood_mask
 
