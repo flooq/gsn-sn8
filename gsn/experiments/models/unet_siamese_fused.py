@@ -12,7 +12,7 @@ from segmentation_models_pytorch.encoders import get_encoder
 class UnetSiameseFused(nn.Module):
     def __init__(
             self,
-            flood_classification: dict,
+            flood_classification=None,
             encoder_name: str = "resnet50",
             encoder_depth: int = 5,
             encoder_weights: Optional[str] = "imagenet",
@@ -23,6 +23,9 @@ class UnetSiameseFused(nn.Module):
             fuse='cat'
     ):
         super().__init__()
+
+        if flood_classification is None:
+            flood_classification = {'enabled': False}
 
         self.encoder = get_encoder(
             encoder_name,
@@ -82,6 +85,8 @@ class UnetSiameseFused(nn.Module):
 
         if flood_classification['enabled']:
             self.classification_head = ClassificationHead(in_channels=self.encoder.out_channels[-1],  classes=1)
+        else:
+            self.classification_head = None
 
         self.name = "u-{}".format(encoder_name)
         self.initialize()
@@ -138,5 +143,5 @@ if __name__ == "__main__":
     model.eval()
     preimg = torch.ones([1, 3, 1280, 1280], dtype=torch.float32)
     postimg = torch.ones([1, 3, 1280, 1280], dtype=torch.float32)
-    floods = model(preimg, postimg)
+    floods, _ = model(preimg, postimg)
     print('floods', floods.size())

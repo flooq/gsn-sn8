@@ -15,12 +15,12 @@ batch_size: 1
 # [siamese, siamese_fused] 2 minutes
 # [baseline] 4 minutes
 # if distance_transform then training time multiply by 2
-max_epochs: 5
+max_epochs: 1
 learning_rate: 0.0001
 weight_decay: 0.00001
 
 save_images_on_disk: true
-save_images_on_disk_count: 20
+save_images_on_disk_count: 10
 visualize_blending_color: true
 
 ######################################
@@ -32,8 +32,8 @@ val_csv: ${project_dir}/inputs/sn8_data_val.csv
 
 hydra:
   run:
-    dir: ${project_dir}/outputs/gsn/${now:%Y-%m-%d}/${now:%H-%M-%S}
+    dir: ${project_dir}/outputs/gsn/${hydra.job.name}/${now:%Y-%m-%d}/${now:%H-%M-%S}
   sweep:
-    dir: ${project_dir}/outputs/gsn/${now:%Y-%m-%d}/${now:%H-%M-%S}
+    dir: ${project_dir}/outputs/gsn/${hydra.job.name}/${now:%Y-%m-%d}/${now:%H-%M-%S}
 output_dir: ${hydra:runtime.output_dir}
 checkpoints_dir: ${hydra:runtime.output_dir}/checkpoints

@@ -139,5 +139,5 @@ if __name__ == "__main__":
     model.eval()
     in_1 = torch.ones([1, 3, 1280, 1280], dtype=torch.float32)
     in_2 = torch.ones([1, 3, 1280, 1280], dtype=torch.float32)
-    out = model(in_1, in_2)
+    out, _ = model(in_1, in_2)
     print(model)

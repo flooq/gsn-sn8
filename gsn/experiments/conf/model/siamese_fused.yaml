@@ -4,16 +4,16 @@ encoder_weights: imagenet
 decoder_use_batchnorm: true
 fuse: cat
 
-load_from_checkpoint: true
+load_from_checkpoint: false
 checkpoint_path:
 
 flood_classification:  # classification flooded/non-flooded
-  enabled: true
+  enabled: false
   initial_weight: 0.01
   max_weight: 0.25
   increase_factor: 2
   increase_every_n_epochs: 3
 
 distance_transform:
-  enabled: true
+  enabled: false
   weight: 0.25

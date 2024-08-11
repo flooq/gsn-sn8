@@ -75,5 +75,5 @@ if __name__ == "__main__":
     model.eval()
     preimg = torch.ones([1, 3, 1280, 1280], dtype=torch.float32)
     postimg = torch.ones([1, 3, 1280, 1280], dtype=torch.float32)
-    x = model(preimg, postimg)
+    x,_ = model(preimg, postimg)
     print('flood_buildings', x.size())
