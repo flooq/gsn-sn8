@@ -15,12 +15,12 @@ batch_size: 1
 # [siamese, siamese_fused] 2 minutes
 # [baseline] 4 minutes
 # if distance_transform then training time multiply by 2
-max_epochs: 300
+max_epochs: 5
 learning_rate: 0.0001
 weight_decay: 0.00001
 
 save_images_on_disk: true
-save_images_on_disk_count: 122
+save_images_on_disk_count: 20
 visualize_blending_color: true
 
 ######################################

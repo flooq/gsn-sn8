@@ -43,8 +43,13 @@ def load_model_from_checkpoint_pattern(cfg, directory, pattern):
 
 
 def load_model_from_checkpoint(cfg, checkpoint_path):
+    if not checkpoint_path:
+        raise ValueError("Checkpoint path is not defined or is None.")
+    if not os.path.exists(checkpoint_path):
+        raise FileNotFoundError(f"Checkpoint file not found: {checkpoint_path}")
     model = get_model(cfg)
     model.load_state_dict(_state_dict(checkpoint_path))
+    print(f'Model loaded from checkpoint: {checkpoint_path}')
     return model
 
 

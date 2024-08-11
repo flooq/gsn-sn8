@@ -1,7 +1,7 @@
 name: neptune
 project: 'gsn/gsn'
-save_images_count: 30
-save_images: true
+save_images_count: 122
+save_images: false
 autoscale_images: true
 metrics_by_class: true
 log_model_checkpoints: false

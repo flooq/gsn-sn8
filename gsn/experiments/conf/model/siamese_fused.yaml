@@ -4,6 +4,9 @@ encoder_weights: imagenet
 decoder_use_batchnorm: true
 fuse: cat
 
+load_from_checkpoint: true
+checkpoint_path:
+
 flood_classification:  # classification flooded/non-flooded
   enabled: true
   initial_weight: 0.01
@@ -12,5 +15,7 @@ flood_classification:  # classification flooded/non-flooded
   increase_every_n_epochs: 3
 
 distance_transform:
-  enabled: false
+  enabled: true
   weight: 0.25
+
+#checkpoint_path: '/home/pawel/projects/flooq/gsn-sn8/outputs/gsn/2024-08-10/23-05-25/checkpoints/last-checkpoint-epoch=65-val_loss=0.00.ckpt'

@@ -10,7 +10,7 @@ from experiments.datasets.datamodule import SN8DataModule
 from experiments.visualize.visualize import save_eval_fig_on_disk, save_eval_fig_in_neptune
 from loggers.loggers import get_logger
 from loss.get_loss import get_loss
-from models.get_model import get_model, load_model_from_checkpoint_pattern
+from models.get_model import get_model, load_model_from_checkpoint_pattern, load_model_from_checkpoint
 from trainer.flood_trainer import FloodTrainer
 
 
@@ -25,7 +25,11 @@ def train_flood(cfg: DictConfig) -> None:
         log_every_n_steps=1,
     )
     logger = get_logger(cfg)
-    flood_trainer = FloodTrainer(loss=get_loss(cfg), model=get_model(cfg), cfg=cfg)
+    if cfg.model.load_from_checkpoint:
+        model = load_model_from_checkpoint(cfg, cfg.model.checkpoint_path)
+    else:
+        model = get_model(cfg)
+    flood_trainer = FloodTrainer(loss=get_loss(cfg), model=model, cfg=cfg)
     trainer = pl.Trainer(
         **trainer_const_params,
         max_epochs=cfg.max_epochs,

@@ -3,3 +3,6 @@ bilinear: True
 in_channels: 3
 n_classes: 5
 batch_size: 1 # not enough memory for larger batch size
+
+load_from_checkpoint: false
+checkpoint_path:
