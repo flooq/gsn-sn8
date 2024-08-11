@@ -19,7 +19,14 @@ class SN8Dataset(Dataset):
                  data_to_load: List[str] = ("preimg", "postimg", "building", "road", "roadspeed", "flood"),
                  img_size: Tuple[int, int] = (1300, 1300),
                  out_img_size: Tuple[int, int] = (1280, 1280),
-                 augment: bool = False):
+                 augment: bool = False,
+                 augment_color: bool = True,
+                 augment_spatial: bool = True,
+                 n_color_transforms: int = 2,
+                 brightness: float = 0.15,
+                 contrast: float = 0.15,
+                 saturation: int = 20,
+                 hue: int = 20):
         """ pytorch dataset for spacenet-8 data. loads images from a csv that contains filepaths to the images
 
         Parameters:
@@ -35,6 +42,13 @@ class SN8Dataset(Dataset):
         img_size (tuple): the size of the input pre-event image in number of pixels before resizing.
         out_img_size (tuple): the size of the input pre- and post-event images in number of pixels after resizing.
         augment (bool): whether to add augmented images to the dataset.
+        augment_color (bool): whether to add color augmented images to the dataset.
+        spatial_color (bool): whether to add spatial augmented images to the dataset.
+        n_color_transforms (int): number of transforms for color augmentation.
+        brightness (float): brightness for color augmentation.
+        contrast (float): contrast for color augmentation.
+        saturation (int): saturation for color augmentation.
+        hue (int): hue for color augmentation.
         """
         self.all_data_types = ("preimg", "postimg", "building", "road", "roadspeed", "flood")
         self.mask_data_types = ("building", "road", "roadspeed", "flood")
@@ -48,11 +62,20 @@ class SN8Dataset(Dataset):
 
         self.augment = augment
         if augment:
-            # All combinations of the three flips generate the D_8 group
-            self.spatial_augmentations = [GeometricTransform(*c) for c in combinations_with_replacement((False, True), 3)]
-            # Color augmentations are randomized
-            n_color_transforms = 4
-            self.color_augmentations = [lambda x: x] + [ColorTransform() for _ in range(n_color_transforms)]
+            if augment_color:
+                self.color_augmentations = ([lambda x: x] +
+                    [ColorTransform(brightness=brightness,
+                                    contrast=contrast,
+                                    saturation=saturation,
+                                    hue=hue) for _ in range(n_color_transforms)])
+            else:
+                self.color_augmentations = [lambda x: x]
+
+            if augment_spatial:
+                # combinations contain identity
+                self.spatial_augmentations = [GeometricTransform(*c) for c in combinations_with_replacement((False, True), 3)]
+            else:
+                self.spatial_augmentations = [lambda x: x]
 
         dict_template = {}
         for i in self.all_data_types:

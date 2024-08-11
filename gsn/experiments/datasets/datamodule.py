@@ -6,20 +6,32 @@ from datasets.datasets import SN8Dataset
 
 
 class SN8DataModule(pl.LightningDataModule):
-    def __init__(self,
-                 train_csv: str,
-                 val_csv: str,
-                 batch_size: int = 1,
-                 augment: bool = False):
+    def __init__(self, cfg):
         super(SN8DataModule, self).__init__()
-        self.train_csv = train_csv
-        self.val_csv = val_csv
-        self.batch_size = int(batch_size)
-        self.augment = augment
+
+        self.train_csv = cfg.train_csv,
+        self.val_csv = cfg.val_csv,
+        self.batch_size = int(cfg.batch_size),
+        self.augment = cfg.augment.enabled
+        self.augment_color = cfg.augment.color.enabled
+        self.augment_spatial = cfg.augment.spatial.enabled
+        self.n_color_transforms = cfg.augment.color.n_transforms
+        self.brightness = cfg.augment.color.brightness
+        self.contrast = cfg.augment.color.contrast
+        self.saturation = cfg.augment.color.saturation
+        self.hue = cfg.augment.color.hue
         self.data_to_load = ["preimg", "postimg", "flood"]
 
     def setup(self, stage):
-        self.train_dataset = SN8Dataset(self.train_csv, data_to_load=self.data_to_load, augment=self.augment)
+        self.train_dataset = SN8Dataset(self.train_csv, data_to_load=self.data_to_load,
+                                        augment=self.augment,
+                                        augment_color=self.augment_color,
+                                        augment_spatial=self.augment_spatial,
+                                        n_color_transforms=self.n_color_transforms,
+                                        brightness=self.brightness,
+                                        contrast=self.contrast,
+                                        saturation=self.saturation,
+                                        hue=self.hue)
         self.val_dataset = SN8Dataset(self.val_csv, data_to_load=self.data_to_load)
 
 

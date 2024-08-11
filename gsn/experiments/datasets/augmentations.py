@@ -16,7 +16,7 @@ class GeometricTransform:
 
 
 class ColorTransform:
-    def __init__(self, brightness: float=0.2, contrast: float=0.2, saturation: float=30, hue: float=20):
+    def __init__(self, brightness: float=0.15, contrast: float=0.15, saturation: float=20, hue: float=15):
         self.transform = A.Compose(
             [
                 A.RandomBrightnessContrast(brightness_limit=brightness, contrast_limit=contrast, p=1),

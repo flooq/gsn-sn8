@@ -11,7 +11,9 @@ def get_logger(cfg: DictConfig):
     tags = [
         cfg.model.name,
         cfg.loss.name,
-        'augment' if cfg.augment else None,
+        'augment' if cfg.augment.enabled else None,
+        'augment_color' if cfg.augment.color.enabled else None,
+        'augment_spatial' if cfg.augment.spatial.enabled else None,
         'distance_transform' if is_distance_transform(cfg) else None,
         'flood_classification' if is_flood_classification(cfg) else None,
         f"lr={cfg.learning_rate}",

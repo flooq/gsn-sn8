@@ -38,7 +38,7 @@ def train_flood(cfg: DictConfig) -> None:
         callbacks=get_callbacks(cfg)
     )
 
-    data_module = SN8DataModule(train_csv=cfg.train_csv, val_csv=cfg.val_csv, batch_size=cfg.batch_size, augment=cfg.augment)
+    data_module = SN8DataModule(cfg)
     trainer.fit(flood_trainer, datamodule=data_module)
 
     best_checkpoint_path = get_model_best_iou_checkpoint_pattern()

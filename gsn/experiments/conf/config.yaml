@@ -8,8 +8,23 @@ defaults:
   - scheduler: step_lr # scheduler in (step_lr)
   - logger: neptune # logger in (csv, neptune)
 
-augment: false
-batch_size: 1
+batch_size: 2
+
+# number of pictures = if augment disable then 1 otherwise color * spatial, where
+# color = color.n_transforms+1 if color.enabled else 1
+# spatial = 8 if spatial.enabled else 1
+augment:
+  enabled: true
+  color:
+    enabled: true
+    n_transforms: 2 # should be greater than 0
+    brightness: 0.15
+    contrast: 0.15
+    saturation: 20
+    hue: 20
+  spatial: # always n_transforms = 8
+    enabled: true
+
 
 # each epoch training time on RTX4090:
 # [siamese, siamese_fused] 2 minutes
