@@ -4,6 +4,7 @@ import os
 import cv2
 
 from omegaconf import DictConfig
+from torch.utils.data import Dataset
 
 from experiments.datasets.datasets import SN8Dataset
 from neptune.types import File
@@ -63,9 +64,9 @@ def save_eval_fig_in_neptune(cfg: DictConfig, model_from_checkpoint, logger):
         logger.experiment["val/prediction_with_masks_on_pre"].append(File.as_image(pre_vis_pred, autoscale=autoscale_images))
         logger.experiment["val/prediction_with_masks_on_post"].append(File.as_image(post_vis_pred, autoscale=autoscale_images))
 
-
-def save_eval_fig_on_disk(cfg: DictConfig, model_from_checkpoint, dir_name):
-    dataset = SN8Dataset(cfg.val_csv, data_to_load=["preimg","postimg","building","road","flood"])
+def save_eval_fig_on_disk(cfg: DictConfig, model_from_checkpoint, dir_name, dataset: Dataset = None):
+    if not dataset:
+        dataset = SN8Dataset(cfg.val_csv, data_to_load=["preimg","postimg","building","road","flood"])
     fig_dir = os.path.join(cfg.output_dir, dir_name)
     os.makedirs(fig_dir, exist_ok=True)
     n_images = min(cfg.save_images_on_disk_count, len(dataset))

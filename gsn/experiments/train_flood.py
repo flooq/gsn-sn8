@@ -47,7 +47,7 @@ def train_flood(cfg: DictConfig) -> None:
     if cfg.save_images_on_disk:
         save_eval_fig_on_disk(cfg, model_from_checkpoint, 'flood_eval_fig')
 
-    if cfg.logger.name == 'neptune':
+    if cfg.logger.name == 'neptune' and cfg.logger.save_images:
         save_eval_fig_in_neptune(cfg, model_from_checkpoint, logger)
 
 
