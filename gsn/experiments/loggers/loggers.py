@@ -10,12 +10,17 @@ def get_logger(cfg: DictConfig):
 
     tags = [
         cfg.model.name,
-        cfg.loss.name,
+        'combined_loss' if cfg.loss.name == 'combined' else cfg.loss.name,
         'augment' if cfg.augment.enabled else None,
         'augment_color' if cfg.augment.color.enabled else None,
         'augment_spatial' if cfg.augment.spatial.enabled else None,
         'distance_transform' if is_distance_transform(cfg) else None,
         'flood_classification' if is_flood_classification(cfg) else None,
+        'from_checkpoint' if cfg.model.load_from_checkpoint else None,
+        f"cross_entropy={cfg.loss.cross_entropy.weight}" if cfg.loss.name == 'combined' and cfg.loss.cross_entropy.weight > 0 else None,
+        f"dice_weight={cfg.loss.dice.weight}" if cfg.loss.name == 'combined' and cfg.loss.dice.weight > 0 else None,
+        f"focal_weight={cfg.loss.focal.weight}" if cfg.loss.name == 'combined' and cfg.loss.focal.weight > 0 else None,
+        f"lovasz_weight={cfg.loss.lovasz.weight}" if cfg.loss.name == 'combined' and cfg.loss.lovasz.weight > 0 else None,
         f"lr={cfg.learning_rate}",
         f"batch={cfg.batch_size}"
     ]

@@ -5,6 +5,7 @@ from omegaconf import DictConfig
 from experiments.loss.bce_and_dice import BceAndDice
 from experiments.loss.bce_loss import BCE
 from experiments.loss.binary_focal_loss import BinaryFocalLoss
+from experiments.loss.combined_loss import CombinedLoss
 from experiments.loss.cross_entropy_loss import CrossEntropy
 from experiments.loss.dice_loss import Dice
 from experiments.loss.focal_and_dice import FocalAndDice
@@ -20,6 +21,7 @@ def get_loss(cfg: DictConfig):
         'bce_and_dice': BceAndDice,
         'bce': BCE,
         'binary_focal': BinaryFocalLoss,
+        'combined': CombinedLoss,
         'cross_entropy': CrossEntropy,
         'dice': Dice,
         'focal': Focal,
