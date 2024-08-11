@@ -12,6 +12,7 @@ from segmentation_models_pytorch.encoders import get_encoder
 class UnetSiameseFused(nn.Module):
     def __init__(
             self,
+            distance_transform=None,
             flood_classification=None,
             encoder_name: str = "resnet50",
             encoder_depth: int = 5,
@@ -19,10 +20,12 @@ class UnetSiameseFused(nn.Module):
             decoder_use_batchnorm: bool = True,
             decoder_channels: List[int] = (256, 128, 64, 32, 16),
             in_channels: int = 3,
-            num_classes: int = 5,
             fuse='cat'
     ):
         super().__init__()
+
+        if distance_transform is None:
+            distance_transform = {'enabled': False}
 
         if flood_classification is None:
             flood_classification = {'enabled': False}
@@ -79,6 +82,9 @@ class UnetSiameseFused(nn.Module):
         self.projs = {0: self.projs_0, 1: self.projs_1, 2: self.projs_2, 3: self.projs_3,
                       4: self.projs_4, 5: self.projs_5}
         # the segmentation head
+        num_classes = 5
+        if distance_transform['enabled']:
+            num_classes += 4
         self.segmentation_head = SegmentationHead(
             in_channels=decoder_channels[-1],
             out_channels=num_classes, activation=None, kernel_size=3)
@@ -145,3 +151,4 @@ if __name__ == "__main__":
     postimg = torch.ones([1, 3, 1280, 1280], dtype=torch.float32)
     floods, _ = model(preimg, postimg)
     print('floods', floods.size())
+

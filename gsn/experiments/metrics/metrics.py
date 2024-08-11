@@ -6,15 +6,17 @@ def get_train_metrics(loss, prefix: str = 'train'):
     return metrics
 
 
-def get_val_metrics(loss, class_loss, pred, mask, metrics_by_class: bool = False, prefix: str = 'val'):
-    assert pred.shape[1] == 5, f"Invalid flood prediction shape: {pred.shape}"
+def get_val_metrics(loss, class_loss, pred, mask, distance_transform_enabled, metrics_by_class: bool = False, prefix: str = 'val'):
+    if distance_transform_enabled:
+        assert pred.shape[1] == 9, f"Invalid flood prediction shape: {pred.shape}"
+        pred_mask = torch.argmax(pred[:, :5, :, :], dim=1)
+        gt_mask = torch.argmax(mask[:, :5, :, :], dim=1)
+    else:
+        assert pred.shape[1] == 5, f"Invalid flood prediction shape: {pred.shape}"
+        pred_mask = torch.argmax(pred, dim=1)
+        gt_mask = torch.argmax(mask, dim=1)
 
-    # Convert predictions to class labels
-    pred_mask = torch.argmax(pred, dim=1)
-
-    # Ensure the masks are of the same type
     pred_mask = pred_mask.to(mask.dtype)
-    gt_mask = torch.argmax(mask, dim=1)
 
     # Calculate true positives (TP), false positives (FP), and false negatives (FN)
     tp = torch.sum((pred_mask > 0) & (pred_mask == gt_mask)).item()
