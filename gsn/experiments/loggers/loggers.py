@@ -14,6 +14,7 @@ def get_logger(cfg: DictConfig):
         'augment' if cfg.augment.enabled else None,
         'augment_color' if cfg.augment.color.enabled else None,
         'augment_spatial' if cfg.augment.spatial.enabled else None,
+        f"augment_mul={_calculate_number_of_pictures(cfg.augment)}" if cfg.augment.enabled else None,
         'distance_transform' if cfg.distance_transform.enabled else None,
         'flood_classification' if cfg.flood_classification.enabled else None,
         'from_checkpoint' if cfg.load_from_checkpoint else None,
@@ -37,3 +38,15 @@ def get_logger(cfg: DictConfig):
     cfg_dict = OmegaConf.to_container(cfg, resolve=True)
     logger.log_hyperparams(cfg_dict)
     return logger
+
+
+def _calculate_number_of_pictures(augment_config):
+    if not augment_config['enabled']:
+        return 1
+    if augment_config['color']['enabled']:
+        color_transforms = augment_config['color']['n_transforms'] + 1
+    else:
+        color_transforms = 1
+    spatial_transforms = 8 if augment_config['spatial']['enabled'] else 1
+    number_of_pictures = color_transforms * spatial_transforms
+    return number_of_pictures
