@@ -3,7 +3,7 @@
 
 defaults:
   - _self_
-  - loss: combined # loss in (bce, bce_and_dice, binary_focal, cross_entropy, dice, focal, focal_and_dice, lovasz, mixed, soft_dice)
+  - loss: focal # loss in (bce, combined, cross_entropy, dice, focal, lovasz)
   - model: siamese_fused # model in (baseline, siamese, siamese_fused)
   - scheduler: step_lr # scheduler in (step_lr)
   - logger: neptune # logger in (csv, neptune)
@@ -17,7 +17,7 @@ augment:
   enabled: true
   color:
     enabled: true
-    n_transforms: 2 # should be greater than 0
+    n_transforms: 4 # should be greater than 0
     brightness: 0.15
     contrast: 0.15
     saturation: 20
@@ -30,12 +30,12 @@ augment:
 # [siamese, siamese_fused] 2 minutes
 # [baseline] 4 minutes
 # if distance_transform then training time multiply by 2
-max_epochs: 1
+max_epochs: 60
 learning_rate: 0.0001
 weight_decay: 0.00001
 
 save_images_on_disk: true
-save_images_on_disk_count: 10
+save_images_on_disk_count: 122
 visualize_blending_color: true
 
 ######################################
