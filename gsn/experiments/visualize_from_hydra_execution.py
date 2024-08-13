@@ -12,7 +12,7 @@ from models.get_model import load_model_from_checkpoint
 # out_dir_name = pictures will be saved in hydra_train_flood_out_dir/out_dir_name
 #   example values:
 #   hydra_train_flood_out_dir = '/home/pawel/projects/flooq/gsn-sn8/outputs/gsn/train_flood/2024-08-11/07-32-45'
-#   checkpoint_file = 'best-checkpoint-epoch=00-val_loss=0.00.ckpt
+#   checkpoint_file = 'best-checkpoint-epoch=00-val_loss=0.00.ckpt'
 #   out_dir_name = 'vis_flood_eval_fig'
 # augment option has been added only to check if augmentation works
 @click.command()
@@ -27,10 +27,10 @@ def visualize(hydra_train_flood_out_dir, checkpoint_file, out_dir_name, blending
 
     cfg.output_dir = hydra_train_flood_out_dir
     cfg.checkpoints_dir = os.path.join(cfg.output_dir, 'checkpoints')
-    cfg.model.checkpoint_path = os.path.join(cfg.checkpoints_dir, checkpoint_file)
+    cfg.checkpoint_path = os.path.join(cfg.checkpoints_dir, checkpoint_file)
     cfg.visualize_blending_color = blending_color
     cfg.save_images_on_disk_count = n_images
-    model_from_checkpoint = load_model_from_checkpoint(cfg, cfg.model.checkpoint_path)
+    model_from_checkpoint = load_model_from_checkpoint(cfg, cfg.checkpoint_path)
     dataset = SN8Dataset(cfg.val_csv, data_to_load=["preimg","postimg","building","road","flood"], augment=augment)
     save_eval_fig_on_disk(cfg, model_from_checkpoint, out_dir_name, dataset)
 
