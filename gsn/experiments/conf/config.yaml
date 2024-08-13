@@ -8,7 +8,17 @@ defaults:
   - scheduler: step_lr # scheduler in (step_lr)
   - logger: neptune # logger in (csv, neptune)
 
-batch_size: 2
+load_from_checkpoint: false
+checkpoint_path: ${oc.env:CHECKPOINT_PATH, ""}
+
+# each epoch training time on RTX4090:
+# [siamese, siamese_fused] 2 minutes
+# [baseline] 4 minutes
+# if distance_transform then training time multiply by 2
+max_epochs: 60
+learning_rate: 0.0001
+weight_decay: 0.00001
+batch_size: 1
 
 # number of pictures = if augment disable then 1 otherwise color * spatial, where
 # color = color.n_transforms+1 if color.enabled else 1
@@ -25,14 +35,17 @@ augment:
   spatial: # always n_transforms = 8
     enabled: true
 
+# distance transform (param not supported and ignored by baseline)
+distance_transform:
+  enabled: true
 
-# each epoch training time on RTX4090:
-# [siamese, siamese_fused] 2 minutes
-# [baseline] 4 minutes
-# if distance_transform then training time multiply by 2
-max_epochs: 60
-learning_rate: 0.0001
-weight_decay: 0.00001
+# flood classification (param not supported and ignored by baseline)
+flood_classification:  # classification flooded/non-flooded
+  enabled: true
+  initial_weight: 0.01
+  max_weight: 0.25
+  increase_factor: 2
+  increase_every_n_epochs: 3
 
 save_images_on_disk: true
 save_images_on_disk_count: 122

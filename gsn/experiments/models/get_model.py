@@ -25,7 +25,7 @@ def get_model(cfg: DictConfig):
     filtered_data = _filter_dict_for_constructor(classname, cfg.model)
     print(f"Model {cfg.model.name} with parameters {filtered_data}")
 
-    return classname(**filtered_data)
+    return classname(distance_transform=cfg.distance_transform, flood_classification=cfg.flood_classification, **filtered_data)
 
 def load_model_from_checkpoint_pattern(cfg, directory, pattern):
     search_pattern = os.path.join(directory, pattern)

@@ -2,7 +2,7 @@ from typing import Optional, List
 
 import torch
 import torch.nn as nn
-from segmentation_models_pytorch.base import initialization as init
+from segmentation_models_pytorch.base import initialization as init, ClassificationHead
 from segmentation_models_pytorch.decoders.unet.decoder import UnetDecoder
 from segmentation_models_pytorch.encoders import get_encoder
 
@@ -10,6 +10,8 @@ from segmentation_models_pytorch.encoders import get_encoder
 class UnetSiamese(nn.Module):
     def __init__(
             self,
+            distance_transform=None,
+            flood_classification=None,
             encoder_name: str = "resnet50",
             encoder_depth: int = 5,
             encoder_weights: Optional[str] = "imagenet",
@@ -19,6 +21,12 @@ class UnetSiamese(nn.Module):
             device: str = "cuda"
     ):
         super().__init__()
+
+        if distance_transform is None:
+            distance_transform = {'enabled': False}
+
+        if flood_classification is None:
+            flood_classification = {'enabled': False}
 
         self.encoder = get_encoder(
             encoder_name,
@@ -37,7 +45,18 @@ class UnetSiamese(nn.Module):
         )
 
         self.penultimate_conv = nn.Conv2d(decoder_channels[-1]*2, 64, kernel_size=3, padding=1)
-        self.outc1 = nn.Conv2d(64, 5, kernel_size=1)
+
+        # the segmentation head
+        num_classes = 5
+        if distance_transform['enabled']:
+            num_classes += 4
+
+        self.outc1 = nn.Conv2d(64, num_classes, kernel_size=1)
+
+        if flood_classification['enabled']:
+            self.classification_head = ClassificationHead(in_channels=self.encoder.out_channels[-1]*2, classes=1)
+        else:
+            self.classification_head = None
 
         self.device = device
         self.name = "u-{}".format(encoder_name)
@@ -45,6 +64,8 @@ class UnetSiamese(nn.Module):
 
     def initialize(self):
         init.initialize_decoder(self.decoder)
+        if self.classification_head is not None:
+            init.initialize_head(self.classification_head)
 
     def forward(self, x1, x2):
         features_x1 = self.encoder(x1)
@@ -57,7 +78,13 @@ class UnetSiamese(nn.Module):
         x = self.penultimate_conv(features)
         x = self.outc1(x)
 
-        return x, None
+        if self.classification_head is not None:
+            combined_features = torch.cat([features_x1[-1], features_x2[-1]], dim=1)
+            out_classification = self.classification_head(combined_features)
+            return x, out_classification
+        else:
+            return x, None
+
 
     @torch.no_grad()
     def predict(self, x1, x2):
@@ -69,7 +96,7 @@ class UnetSiamese(nn.Module):
 
 
 if __name__ == "__main__":
-    model = UnetSiamese(encoder_name="resnet50")
+    model = UnetSiamese(encoder_name="resnet50", distance_transform = {'enabled': True}, flood_classification = {'enabled': True})
     print(model)
 
     model.eval()

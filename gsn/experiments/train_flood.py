@@ -25,8 +25,8 @@ def train_flood(cfg: DictConfig) -> None:
         log_every_n_steps=1,
     )
     logger = get_logger(cfg)
-    if cfg.model.load_from_checkpoint:
-        model = load_model_from_checkpoint(cfg, cfg.model.checkpoint_path)
+    if cfg.load_from_checkpoint:
+        model = load_model_from_checkpoint(cfg, cfg.checkpoint_path)
     else:
         model = get_model(cfg)
     flood_trainer = FloodTrainer(loss=get_loss(cfg), model=model, cfg=cfg)

@@ -19,18 +19,12 @@ class FloodTrainer(pl.LightningModule):
         self.cfg = cfg
         self.train_loss_sum = 0.0
         self.train_sample_count = 0
-        if hasattr(cfg.model, 'distance_transform'):
-            self.distance_transform_enabled = cfg.model.distance_transform.enabled
-        else:
-            self.distance_transform_enabled = False
-        if hasattr(cfg.model, 'flood_classification'):
-            self.flood_classification_enabled = cfg.model.flood_classification.enabled
-        else:
-            self.flood_classification_enabled = False
-        self.flood_classification_weight = cfg.model.flood_classification.initial_weight if self.flood_classification_enabled else 0
-        self.flood_classification_increase_every_n_epochs = cfg.model.flood_classification.increase_every_n_epochs if self.flood_classification_enabled else None
-        self.flood_classification_increase_factor = cfg.model.flood_classification.increase_factor if self.flood_classification_enabled else None
-        self.flood_classification_max_weight = cfg.model.flood_classification.max_weight if self.flood_classification_enabled else None
+        self.distance_transform_enabled = cfg.distance_transform.enabled
+        self.flood_classification_enabled = cfg.flood_classification.enabled
+        self.flood_classification_weight = cfg.flood_classification.initial_weight if self.flood_classification_enabled else 0
+        self.flood_classification_increase_every_n_epochs = cfg.flood_classification.increase_every_n_epochs if self.flood_classification_enabled else None
+        self.flood_classification_increase_factor = cfg.flood_classification.increase_factor if self.flood_classification_enabled else None
+        self.flood_classification_max_weight = cfg.flood_classification.max_weight if self.flood_classification_enabled else None
         print(f"Initial flood classification weight: {self.flood_classification_weight}")
         self.main_weight = 1 - self.flood_classification_weight
         print(f"Main weight: {self.main_weight}")
@@ -132,4 +126,3 @@ class FloodTrainer(pl.LightningModule):
         summed_channel_tensor = torch.sum(summed_spatial_tensor, dim=1)
         class_mask = (summed_channel_tensor > 0).float().unsqueeze(1)
         return class_mask
-
