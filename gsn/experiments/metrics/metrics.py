@@ -1,12 +1,10 @@
 import torch
 
-
 def get_train_metrics(loss, prefix: str = 'train'):
     metrics = {f"{prefix}/loss": loss}
     return metrics
 
-
-def get_val_metrics(loss, class_loss, pred, mask, distance_transform_enabled, metrics_by_class: bool = False, prefix: str = 'val'):
+def get_val_metrics(loss, pred, mask, class_loss, class_pred, class_mask, distance_transform_enabled, metrics_by_class: bool = False, prefix: str = 'val'):
     if distance_transform_enabled:
         assert pred.shape[1] == 9, f"Invalid flood prediction shape: {pred.shape}"
         pred_mask = torch.argmax(pred[:, :5, :, :], dim=1)
@@ -39,6 +37,10 @@ def get_val_metrics(loss, class_loss, pred, mask, distance_transform_enabled, me
 
     if class_loss is not None:
         metrics["class_loss"] = class_loss
+        _class_pred = (torch.sigmoid(class_pred) >= 0.5).float()
+        correct_predictions = torch.eq(_class_pred, class_mask).sum().item()
+        class_accuracy = correct_predictions / class_pred.size(0)
+        metrics["class_accuracy"] = class_accuracy
 
     if metrics_by_class:
         class_labels = {

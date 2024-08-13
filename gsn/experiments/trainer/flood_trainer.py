@@ -34,15 +34,15 @@ class FloodTrainer(pl.LightningModule):
         return self.model(x)
 
     def training_step(self, batch, batch_idx):
-        _loss, _, _, _ = self._do_step(batch)
+        _loss, _, _, _, _, _ = self._do_step(batch)
         self.train_loss_sum += _loss.item()
         self.train_sample_count += 1
         return _loss
 
     def validation_step(self, batch, batch_idx):
-        _loss, class_loss, flood_pred, flood = self._do_step(batch)
+        _loss, flood_pred, flood, class_loss, class_pred, class_mask = self._do_step(batch)
         metrics_by_class = self.cfg.logger.metrics_by_class
-        metrics = get_val_metrics(_loss, class_loss, flood_pred, flood, self.distance_transform_enabled, metrics_by_class)
+        metrics = get_val_metrics(_loss, flood_pred, flood, class_loss, class_pred, class_mask, self.distance_transform_enabled, metrics_by_class)
         self.log_dict(metrics)
         return _loss
 
@@ -73,15 +73,17 @@ class FloodTrainer(pl.LightningModule):
             flood_with_background = torch.cat((flood_with_background, distance_transform_flood), dim=1)
         _loss = self.main_weight * self.loss(flood_pred, flood_with_background)
 
-        class_loss_value = None
         if self.flood_classification_enabled:
             if class_pred is None:
                 raise ValueError(f"Model {self.cfg.model.name} does not have a classification head!")
             class_mask = self._get_class_mask(flood)
             class_loss_value = self.flood_classification_weight*self.class_loss(class_pred, class_mask)
             _loss += class_loss_value
-
-        return _loss, class_loss_value, flood_pred, flood_with_background
+        else:
+            class_loss_value = None
+            class_pred = None
+            class_mask = None
+        return _loss, flood_pred, flood_with_background, class_loss_value, class_pred, class_mask
 
     def _increase_flood_classification_weight(self):
         if (self.flood_classification_enabled and
