@@ -17,6 +17,7 @@ def get_logger(cfg: DictConfig):
         f"augment_mul={_calculate_number_of_pictures(cfg.augment)}" if cfg.augment.enabled else None,
         'distance_transform' if cfg.distance_transform.enabled else None,
         'flood_classification' if cfg.flood_classification.enabled else None,
+        'attention' if cfg.attention.enabled else None,
         'from_checkpoint' if cfg.load_from_checkpoint else None,
         f"cross_entropy={cfg.loss.cross_entropy.weight}" if cfg.loss.name == 'combined' and cfg.loss.cross_entropy.weight > 0 else None,
         f"dice_weight={cfg.loss.dice.weight}" if cfg.loss.name == 'combined' and cfg.loss.dice.weight > 0 else None,

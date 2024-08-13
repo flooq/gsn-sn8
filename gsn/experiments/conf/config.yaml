@@ -18,7 +18,7 @@ checkpoint_path: ${oc.env:CHECKPOINT_PATH, ""}
 max_epochs: 60
 learning_rate: 0.0001
 weight_decay: 0.00001
-batch_size: 1
+batch_size: 2
 
 # number of pictures = if augment disable then 1 otherwise color * spatial, where
 # color = color.n_transforms+1 if color.enabled else 1
@@ -35,17 +35,23 @@ augment:
   spatial: # always n_transforms = 8
     enabled: true
 
-# distance transform (param not supported and ignored by baseline)
+# distance transform (not supported and ignored by baseline)
 distance_transform:
   enabled: true
 
-# flood classification (param not supported and ignored by baseline)
+# flood classification (not supported and ignored by baseline)
 flood_classification:  # classification flooded/non-flooded
   enabled: true
   initial_weight: 0.01
   max_weight: 0.25
   increase_factor: 2
-  increase_every_n_epochs: 3
+  increase_every_n_epochs: 5
+
+# use manet: Multi-scale Attention Net (not supported and ignored by baseline)
+attention:
+  enabled: true
+  pab_channels: 64
+
 
 save_images_on_disk: true
 save_images_on_disk_count: 122

@@ -3,6 +3,7 @@ from typing import Optional, List
 import torch
 import torch.nn as nn
 from segmentation_models_pytorch.base import initialization as init, ClassificationHead
+from segmentation_models_pytorch.decoders.manet.decoder import MAnetDecoder
 from segmentation_models_pytorch.decoders.unet.decoder import UnetDecoder
 from segmentation_models_pytorch.encoders import get_encoder
 
@@ -12,6 +13,7 @@ class UnetSiamese(nn.Module):
             self,
             distance_transform=None,
             flood_classification=None,
+            attention=None,
             encoder_name: str = "resnet50",
             encoder_depth: int = 5,
             encoder_weights: Optional[str] = "imagenet",
@@ -28,6 +30,9 @@ class UnetSiamese(nn.Module):
         if flood_classification is None:
             flood_classification = {'enabled': False}
 
+        if attention is None:
+            attention = {'enabled': False}
+
         self.encoder = get_encoder(
             encoder_name,
             in_channels=in_channels,
@@ -35,14 +40,23 @@ class UnetSiamese(nn.Module):
             weights=encoder_weights,
         )
 
-        self.decoder = UnetDecoder(
-            encoder_channels=self.encoder.out_channels,
-            decoder_channels=decoder_channels,
-            n_blocks=encoder_depth,
-            use_batchnorm=decoder_use_batchnorm,
-            center=True if encoder_name.startswith("vgg") else False,
-            attention_type=None
-        )
+        if attention.enabled:
+            self.decoder = MAnetDecoder(
+                encoder_channels=self.encoder.out_channels,
+                decoder_channels=decoder_channels,
+                n_blocks=encoder_depth,
+                use_batchnorm=decoder_use_batchnorm,
+                pab_channels=attention.pab_channels
+            )
+        else:
+            self.decoder = UnetDecoder(
+                encoder_channels=self.encoder.out_channels,
+                decoder_channels=decoder_channels,
+                n_blocks=encoder_depth,
+                use_batchnorm=decoder_use_batchnorm,
+                center=True if encoder_name.startswith("vgg") else False,
+                attention_type=None
+            )
 
         self.penultimate_conv = nn.Conv2d(decoder_channels[-1]*2, 64, kernel_size=3, padding=1)
 
@@ -100,7 +114,7 @@ if __name__ == "__main__":
     print(model)
 
     model.eval()
-    preimg = torch.ones([1, 3, 1280, 1280], dtype=torch.float32)
-    postimg = torch.ones([1, 3, 1280, 1280], dtype=torch.float32)
+    preimg = torch.ones([2, 3, 1280, 1280], dtype=torch.float32)
+    postimg = torch.ones([2, 3, 1280, 1280], dtype=torch.float32)
     x,_ = model(preimg, postimg)
     print('flood_buildings', x.size())
