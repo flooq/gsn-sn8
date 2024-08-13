@@ -1,12 +1,11 @@
-import numpy as np
 import pytorch_lightning as pl
 import torch
 
 from metrics.metrics import get_val_metrics
 from metrics.metrics import get_train_metrics
-from scipy.ndimage import distance_transform_edt
 from torch import nn
 
+from experiments.distance_transform.weighted_distance_transform import WeightedDistanceTransform
 from experiments.schedulers.get_scheduler import get_scheduler
 
 
@@ -20,6 +19,9 @@ class FloodTrainer(pl.LightningModule):
         self.train_loss_sum = 0.0
         self.train_sample_count = 0
         self.distance_transform_enabled = cfg.distance_transform.enabled
+        if self.distance_transform_enabled:
+            self.distance_transform = WeightedDistanceTransform(
+                weights=cfg.distance_transform.weights, inverted=cfg.distance_transform.inverted)
         self.flood_classification_enabled = cfg.flood_classification.enabled
         self.flood_classification_weight = cfg.flood_classification.initial_weight if self.flood_classification_enabled else 0
         self.flood_classification_increase_every_n_epochs = cfg.flood_classification.increase_every_n_epochs if self.flood_classification_enabled else None
@@ -69,8 +71,8 @@ class FloodTrainer(pl.LightningModule):
         flood_pred, class_pred = self.model(preimg, postimg)
         flood_with_background = self._get_flood_with_background(flood)
         if self.distance_transform_enabled:
-            distance_transform_flood = self._get_distance_transform_flood_mask(flood)
-            flood_with_background = torch.cat((flood_with_background, distance_transform_flood), dim=1)
+            distance_transform_flood = self.distance_transform(flood)
+            flood_with_background = torch.cat((flood_with_background, distance_transform_flood), dim=1) # 5 -> 9 channels
         _loss = self.main_weight * self.loss(flood_pred, flood_with_background)
 
         if self.flood_classification_enabled:
@@ -96,23 +98,6 @@ class FloodTrainer(pl.LightningModule):
             self.main_weight = 1 - self.flood_classification_weight
             print(f"\nNew flood classification weight: {self.flood_classification_weight}")
             print(f"New main weight: {self.main_weight}")
-
-    # I tried with kornia but this implementation is faster despite moving tensor to cpu
-    @staticmethod
-    def _get_distance_transform_flood_mask(flood_batch):
-        flood_np = flood_batch.cpu().numpy()
-        distance_transforms = np.zeros_like(flood_np)
-        for i in range(flood_np.shape[0]):  # iterate over batch
-            for j in range(flood_np.shape[1]):  # iterate over the 4 masks
-                distance_transform = distance_transform_edt(flood_np[i, j])
-                # Normalize distance transform
-                max_distance = distance_transform.max()
-                if max_distance > 0:
-                    distance_transform /= max_distance
-                distance_transforms[i, j] = distance_transform
-                #distance_transforms[i, j] = distance_transform_edt(flood_np[i, j])
-        distance_transforms_tensor = torch.from_numpy(distance_transforms).to(flood_batch.device)
-        return distance_transforms_tensor
 
     @staticmethod
     def _get_flood_with_background(flood_batch):

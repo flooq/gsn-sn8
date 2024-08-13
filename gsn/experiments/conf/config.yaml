@@ -15,7 +15,8 @@ checkpoint_path: ${oc.env:CHECKPOINT_PATH, ""}
 # [siamese, siamese_fused] 2 minutes
 # [baseline] 4 minutes
 # if distance_transform then training time multiply by 2
-max_epochs: 60
+# if attention enabled with pab_channels=64, then multiply by 4
+max_epochs: 100
 learning_rate: 0.0001
 weight_decay: 0.00001
 batch_size: 2
@@ -35,21 +36,23 @@ augment:
   spatial: # always n_transforms = 8
     enabled: true
 
-# distance transform (not supported and ignored by baseline)
+# distance transform (baseline - not supported and ignored)
 distance_transform:
   enabled: true
+  weights: [2.0, 2.0, 1.0, 1.0] # buildings (channels [0,1]) are more important in terms of boundaries
+  inverted: true # if true, then largest values near border
 
-# flood classification (not supported and ignored by baseline)
+# flood classification (baseline - not supported and ignored )
 flood_classification:  # classification flooded/non-flooded
-  enabled: true
+  enabled: false
   initial_weight: 0.01
   max_weight: 0.25
   increase_factor: 2
   increase_every_n_epochs: 5
 
-# use manet: Multi-scale Attention Net (not supported and ignored by baseline)
+# use manet: Multi-scale Attention Net (baseline - not supported and ignored)
 attention:
-  enabled: true
+  enabled: false
   pab_channels: 64
 
 
