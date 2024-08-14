@@ -25,7 +25,7 @@ class WeightedDistanceTransform(nn.Module):
                 max_distance = distance_transform.max()
                 if max_distance > 0:
                     if self.inverted:
-                        distance_transform = max_distance - distance_transform
+                        distance_transform = np.where(flood_np[i, j] > 0, max_distance - distance_transform, 0)
                     distance_transform /= max_distance
                 distance_transforms[i, j] = distance_transform
         distance_transforms_tensor = torch.from_numpy(distance_transforms).to(flood_batch.device)
