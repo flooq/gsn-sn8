@@ -70,6 +70,11 @@ class UnetSiameseFused(nn.Module):
             ch = [3, 32, 24, 48, 120, 352]
         if encoder_name == 'timm-efficientnet-b3':
             ch = [3, 40, 32, 48, 136, 384]
+        if encoder_name == 'timm-efficientnet-b5':
+            ch = [3, 48, 40, 64, 176, 512]
+        if encoder_name == 'timm-efficientnet-b6':
+            ch = [3, 56, 40, 72, 200, 576]
+
         self.fuse = fuse
 
         if self.fuse == 'cat':
