@@ -2,7 +2,7 @@ import os
 
 from omegaconf import DictConfig, OmegaConf
 import pytorch_lightning as pl
-
+import logging
 
 def get_logger(cfg: DictConfig):
     if cfg.logger.name == 'csv':
@@ -10,12 +10,14 @@ def get_logger(cfg: DictConfig):
 
     tags = [
         cfg.model.name,
+        cfg.model.encoder_name if cfg.model.name != 'baseline' else None,
         'combined_loss' if cfg.loss.name == 'combined' else cfg.loss.name,
         'augment' if cfg.augment.enabled else None,
         'augment_color' if cfg.augment.color.enabled else None,
         'augment_spatial' if cfg.augment.spatial.enabled else None,
         f"augment_mul={_calculate_number_of_pictures(cfg.augment)}" if cfg.augment.enabled else None,
-        'distance_transform' if cfg.distance_transform.enabled else None,
+        'distance_transform' if cfg.distance_transform.enabled and not cfg.distance_transform.inverted else None,
+        'distance_transform_inv' if cfg.distance_transform.enabled and cfg.distance_transform.inverted else None,
         'flood_classification' if cfg.flood_classification.enabled else None,
         'attention' if cfg.attention.enabled else None,
         'from_checkpoint' if cfg.load_from_checkpoint else None,
@@ -36,6 +38,7 @@ def get_logger(cfg: DictConfig):
         log_model_checkpoints=cfg.logger.log_model_checkpoints,
         tags=tags
     )
+    logging.getLogger("neptune").setLevel(logging.CRITICAL) # to ignore annoying warnings see https://github.com/neptune-ai/neptune-client/issues/1702
     cfg_dict = OmegaConf.to_container(cfg, resolve=True)
     logger.log_hyperparams(cfg_dict)
     return logger

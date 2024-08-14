@@ -1,3 +1,5 @@
+from segmentation_models_pytorch.metrics import precision
+
 import env
 import hydra
 import pytorch_lightning as pl
@@ -30,14 +32,16 @@ def train_flood(cfg: DictConfig) -> None:
     else:
         model = get_model(cfg)
     flood_trainer = FloodTrainer(loss=get_loss(cfg), model=model, cfg=cfg)
+
     trainer = pl.Trainer(
         **trainer_const_params,
+        #precision=16,
+        accumulate_grad_batches=cfg.accumulate_grad_batches,  # Simulate a larger batch size by accumulating gradients
         max_epochs=cfg.max_epochs,
         default_root_dir=cfg.output_dir,
         logger=logger,
         callbacks=get_callbacks(cfg)
     )
-
     data_module = SN8DataModule(cfg)
     trainer.fit(flood_trainer, datamodule=data_module)
 
