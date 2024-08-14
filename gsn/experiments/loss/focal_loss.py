@@ -1,12 +1,20 @@
-import segmentation_models_pytorch as smp
+import torch.nn.functional as F
 from torch import nn
 
 class Focal(nn.Module):
-
-    def __init__(self, mode: str, alpha: int, gamma: int, reduction='mean'):
+    def __init__(self, gamma):
         super().__init__()
-        self.loss = smp.losses.FocalLoss(mode=mode, alpha=alpha, gamma=gamma, reduction=reduction)
+        self.gamma = gamma
 
-    def forward(self, inputs, targets):
-        loss = self.loss(inputs, targets)
-        return loss
+    def forward(self, input, target):
+        if not (target.size() == input.size()):
+            raise ValueError("Target size ({}) must be the same as input size ({})"
+                             .format(target.size(), input.size()))
+
+        max_val = (-input).clamp(min=0)
+        loss = input - input * target + max_val + \
+               ((-max_val).exp() + (-input - max_val).exp()).log()
+
+        invprobs = F.logsigmoid(-input * (target * 2.0 - 1.0))
+        loss = (invprobs * self.gamma).exp() * loss
+        return loss.mean()
