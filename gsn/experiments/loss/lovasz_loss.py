@@ -3,9 +3,9 @@ import segmentation_models_pytorch as smp
 
 class Lovasz(nn.Module):
 
-    def __init__(self, mode: str):
+    def __init__(self):
         super().__init__()
-        self.loss = smp.losses.LovaszLoss(mode=mode)
+        self.loss = smp.losses.LovaszLoss(mode='binary')
 
     def forward(self, inputs, targets):
         loss = self.loss(inputs, targets)

@@ -1,5 +1,8 @@
-import segmentation_models_pytorch as smp
 from torch import nn
+
+from experiments.loss.dice_loss import Dice
+from experiments.loss.focal_loss import Focal
+from experiments.loss.lovasz_loss import Lovasz
 
 
 class CombinedLoss(nn.Module):
@@ -12,9 +15,9 @@ class CombinedLoss(nn.Module):
         self.lovasz_weight = lovasz.weight
 
         self.cross_entropy_loss = nn.CrossEntropyLoss()
-        self.dice_loss = smp.losses.DiceLoss(mode=mode, log_loss=dice.log_loss)
-        self.focal_loss = smp.losses.FocalLoss(mode=mode, alpha=focal.alpha, gamma=focal.gamma, reduction=focal.reduction)
-        self.lovasz_loss = smp.losses.LovaszLoss(mode=mode, per_image=lovasz.per_image)
+        self.dice_loss = Dice()
+        self.focal_loss = Focal(gamma=focal.gamma)
+        self.lovasz_loss = Lovasz()
 
     def forward(self, inputs, targets):
         cross_entropy = self.cross_entropy_loss(inputs, targets) if self.cross_entropy_weight > 0 else 0

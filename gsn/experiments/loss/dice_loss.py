@@ -1,12 +1,17 @@
-import segmentation_models_pytorch as smp
+import torch
 from torch import nn
 
 class Dice(nn.Module):
 
-    def __init__(self, mode: str = 'binary', log_loss: bool = False):
+    def __init__(self):
         super().__init__()
-        self.loss = smp.losses.DiceLoss(mode=mode, log_loss=log_loss)
 
     def forward(self, inputs, targets):
-        loss = self.loss(inputs, targets)
+        input = torch.sigmoid(inputs)
+        smooth = 1.0
+
+        iflat = input.view(-1)
+        tflat = targets.contiguous().view(-1)
+        intersection = (iflat * tflat).sum()
+        loss = 1-((2.0 * intersection + smooth) / (iflat.sum() + tflat.sum() + smooth))
         return loss

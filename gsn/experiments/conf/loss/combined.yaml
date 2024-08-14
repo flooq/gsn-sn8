@@ -1,15 +1,10 @@
 name: combined
-mode: binary
 cross_entropy:
   weight: 0.0
 dice:
-  weight: 0.33
-  log_loss: false
+  weight: 0.25
 focal:
-  weight: 0.33
-  alpha: 1
+  weight: 0.75
   gamma: 2
-  reduction: 'mean'
 lovasz:
-  weight: 0.34
-  per_image: false
+  weight: 0.0
