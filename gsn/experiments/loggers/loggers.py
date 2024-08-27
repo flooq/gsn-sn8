@@ -20,6 +20,7 @@ def get_logger(cfg: DictConfig):
         'dist_trans_inv' if cfg.distance_transform.enabled and cfg.distance_transform.inverted else None,
         'flood_class' if cfg.flood_classification.enabled else None,
         'attention' if cfg.attention.enabled else None,
+        f"attention_n={cfg.attention.pab_channels}" if cfg.attention.enabled else None,
         'ckpt' if cfg.load_from_checkpoint else None,
         f"cross_entropy={cfg.loss.cross_entropy.weight}" if cfg.loss.name == 'combined' and cfg.loss.cross_entropy.weight > 0 else None,
         f"dice_weight={cfg.loss.dice.weight}" if cfg.loss.name == 'combined' and cfg.loss.dice.weight > 0 else None,
