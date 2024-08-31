@@ -22,6 +22,7 @@ class SN8DataModule(pl.LightningDataModule):
         self.saturation = cfg.augment.color.saturation
         self.hue = cfg.augment.color.hue
         self.data_to_load = ["preimg", "postimg", "flood"]
+        self.exclude_files = set(cfg.exclude_files)
 
     def setup(self, stage):
         self.train_dataset = SN8Dataset(csv_filename=self.train_csv,
@@ -33,8 +34,9 @@ class SN8DataModule(pl.LightningDataModule):
                                         brightness=self.brightness,
                                         contrast=self.contrast,
                                         saturation=self.saturation,
-                                        hue=self.hue)
-        self.val_dataset = SN8Dataset(self.val_csv, data_to_load=self.data_to_load)
+                                        hue=self.hue,
+                                        exclude_files=self.exclude_files)
+        self.val_dataset = SN8Dataset(self.val_csv, data_to_load=self.data_to_load, exclude_files=self.exclude_files)
 
 
     def train_dataloader(self):

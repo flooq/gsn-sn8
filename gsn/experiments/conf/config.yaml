@@ -80,3 +80,27 @@ hydra:
     dir: ${project_dir}/outputs/gsn/${hydra.job.name}/${now:%Y-%m-%d}/${now:%H-%M-%S}
 output_dir: ${hydra:runtime.output_dir}
 checkpoints_dir: ${hydra:runtime.output_dir}/checkpoints
+
+##################################################
+### Exclude tiles from training and validation ###
+
+exclude_files:
+  # train
+  - 10400100684A4B00_1_22_74.tif
+  - 10400100684A4B00_1_20_82.tif
+  - 10400100684A4B00_1_20_81.tif
+  - 10400100684A4B00_1_11_96.tif
+  - 10400100684A4B00_1_10_103.tif
+  - 10400100684A4B00_1_10_97.tif
+  - 10400100684A4B00_1_9_102.tif
+  - 10400100684A4B00_1_8_99.tif
+  - 10400100684A4B00_1_6_103.tif
+  - 105001001A0FFC00_0_9_2.tif
+  - 10500500C4DD7000_0_42_58.tif
+  - 10500500C4DD7000_0_39_61.tif
+  - 10500500C4DD7000_0_28_65.tif
+  # val
+  - 10300100AF395C00_2_18_35.tif
+
+
+

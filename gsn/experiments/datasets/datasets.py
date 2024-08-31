@@ -1,5 +1,6 @@
 import csv
 import copy
+import os
 import random
 from itertools import combinations_with_replacement
 from typing import List, Tuple
@@ -26,7 +27,8 @@ class SN8Dataset(Dataset):
                  brightness: float = 0.15,
                  contrast: float = 0.15,
                  saturation: int = 20,
-                 hue: int = 20):
+                 hue: int = 20,
+                 exclude_files=None):
         """ pytorch dataset for spacenet-8 data. loads images from a csv that contains filepaths to the images
 
         Parameters:
@@ -56,7 +58,9 @@ class SN8Dataset(Dataset):
         self.out_img_size = out_img_size
         self.data_to_load = data_to_load
         self.files = []
-
+        if exclude_files is None:
+            exclude_files = set()
+        self.exclude_files = exclude_files
         self.img_resize = Resize(*out_img_size)  # default interpolation method is linear
         self.mask_resize = Resize(*out_img_size, interpolation=cv2.INTER_NEAREST)
 
@@ -84,6 +88,9 @@ class SN8Dataset(Dataset):
         with open(csv_filename, newline='') as csvfile:
             reader = csv.DictReader(csvfile)
             for row in reader:
+                filename = os.path.basename(row['preimg'])
+                if filename in self.exclude_files:
+                    continue
                 in_data = copy.copy(dict_template)
                 for j in self.data_to_load:
                     in_data[j] = row[j]
