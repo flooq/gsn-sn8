@@ -3,3 +3,4 @@ encoder_name: resnet50
 encoder_weights: imagenet
 decoder_use_batchnorm: true
 fuse: cat
+unet_plus_plus: true # only witch batch_size=1

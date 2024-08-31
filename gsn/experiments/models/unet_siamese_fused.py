@@ -7,6 +7,7 @@ from segmentation_models_pytorch.base import ClassificationHead
 from segmentation_models_pytorch.base import initialization as init
 from segmentation_models_pytorch.decoders.manet.decoder import MAnetDecoder
 from segmentation_models_pytorch.decoders.unet.decoder import UnetDecoder
+from segmentation_models_pytorch.decoders.unetplusplus.decoder import UnetPlusPlusDecoder
 from segmentation_models_pytorch.encoders import get_encoder
 
 
@@ -22,7 +23,8 @@ class UnetSiameseFused(nn.Module):
             decoder_use_batchnorm: bool = True,
             decoder_channels: List[int] = (256, 128, 64, 32, 16),
             in_channels: int = 3,
-            fuse='cat'
+            fuse='cat',
+            unet_plus_plus: bool = False
     ):
         super().__init__()
 
@@ -34,6 +36,8 @@ class UnetSiameseFused(nn.Module):
 
         if attention is None:
             attention = {'enabled': False}
+
+        self.unet_plus_plus = unet_plus_plus
 
         self.encoder = get_encoder(
             encoder_name,
@@ -50,7 +54,16 @@ class UnetSiameseFused(nn.Module):
                 use_batchnorm=decoder_use_batchnorm,
                 pab_channels=attention.pab_channels
             )
-        else :
+        elif unet_plus_plus:
+            self.decoder = UnetPlusPlusDecoder(
+                encoder_channels=self.encoder.out_channels,
+                decoder_channels=decoder_channels,
+                n_blocks=encoder_depth,
+                use_batchnorm=decoder_use_batchnorm,
+                center=True if encoder_name.startswith("vgg") else False,
+                attention_type=None
+            )
+        else:
             self.decoder = UnetDecoder(
                 encoder_channels=self.encoder.out_channels,
                 decoder_channels=decoder_channels,
@@ -59,7 +72,6 @@ class UnetSiameseFused(nn.Module):
                 center=True if encoder_name.startswith("vgg") else False,
                 attention_type=None
             )
-
         if encoder_name in 'resnet34':
             ch = [3, 64, 64, 128, 256, 512]
         if encoder_name in  ['se_resnet50', 'resnet50', 'se_resnext50_32x4d']:

@@ -9,7 +9,7 @@ def get_logger(cfg: DictConfig):
         return pl.loggers.CSVLogger(save_dir=cfg.output_dir, name='csv_logger')
 
     tags = [
-        cfg.model.name,
+        cfg.model.name if cfg.model.name != 'siamese_fused' or not cfg.model.unet_plus_plus else 'siamese++_fused',
         cfg.model.encoder_name if cfg.model.name != 'baseline' else None,
         'combined_loss' if cfg.loss.name == 'combined' else cfg.loss.name,
         'aug' if cfg.augment.enabled else None,
