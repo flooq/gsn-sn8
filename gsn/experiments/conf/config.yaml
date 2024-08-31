@@ -61,6 +61,12 @@ attention:
   enabled: false
   pab_channels: 64
 
+regularization_loss:
+  enabled: false
+  gradient_alpha: 2
+  shape_alpha: 20
+  corner_alpha: 1
+  channels_to_apply: ['non-flood-building', 'flood-building']
 
 save_images_on_disk: true
 save_images_on_disk_count: 122
