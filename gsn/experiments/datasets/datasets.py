@@ -5,6 +5,7 @@ import random
 from itertools import combinations_with_replacement
 from typing import List, Tuple
 import cv2
+from albumentations import RandomCrop
 from skimage import io
 import numpy as np
 import torch
@@ -20,6 +21,8 @@ class SN8Dataset(Dataset):
                  data_to_load: List[str] = ("preimg", "postimg", "building", "road", "roadspeed", "flood"),
                  img_size: Tuple[int, int] = (1300, 1300),
                  out_img_size: Tuple[int, int] = (1280, 1280),
+                 crop_size: Tuple[int, int] = (512, 512),
+                 random_crop: bool = False,
                  augment: bool = False,
                  augment_color: bool = True,
                  augment_spatial: bool = True,
@@ -56,6 +59,8 @@ class SN8Dataset(Dataset):
         self.mask_data_types = ("building", "road", "roadspeed", "flood")
         self.img_size = img_size
         self.out_img_size = out_img_size
+        self.crop_size = crop_size
+        self.random_crop = random_crop
         self.data_to_load = data_to_load
         self.files = []
         if exclude_files is None:
@@ -63,7 +68,7 @@ class SN8Dataset(Dataset):
         self.exclude_files = exclude_files
         self.img_resize = Resize(*out_img_size)  # default interpolation method is linear
         self.mask_resize = Resize(*out_img_size, interpolation=cv2.INTER_NEAREST)
-
+        self.f_random_crop = RandomCrop(*crop_size)
         self.augment = augment
         if augment:
             if augment_color:
@@ -124,7 +129,7 @@ class SN8Dataset(Dataset):
 
     def __getitem__(self, index):
         data_dict = self.files[index]
-
+        images = {}
         returned_data = []
         spatial_aug = random.choice(self.spatial_augmentations) if self.augment else None
         color_aug = random.choice(self.color_augmentations) if self.augment else None
@@ -133,6 +138,20 @@ class SN8Dataset(Dataset):
             if filepath is not None:
                 image = io.imread(filepath)
                 image = self._resize(image, data_type)
+                images[data_type] = image
+
+        if self.random_crop:
+            cropped_images = self.f_random_crop(image=images['preimg'])
+            crop_bbox = cropped_images['boxes'][0] if 'boxes' in cropped_images else (0, 0, self.crop_size[0], self.crop_size[1])
+            crop_x, crop_y, crop_w, crop_h = crop_bbox
+            for key in images.keys():
+                image = images[key]
+                if image is not None:
+                    images[key] = image[crop_y:crop_y+crop_h, crop_x:crop_x+crop_w]
+
+        for data_type in self.all_data_types:
+            if data_type in images:
+                image = images[data_type]
                 image = self._augment(image, data_type, spatial_aug, color_aug)
                 image = self._conform_axes(image)
                 returned_data.append(image)

@@ -26,6 +26,10 @@ learning_rate: 0.0001
 weight_decay: 0.00001
 batch_size: 2
 accumulate_grad_batches: 1
+image_random_crop: # used only during training, if disabled then img_size = (1280,1280)
+  enabled: true
+  crop_height: 512
+  crop_width: 512
 
 # number of pictures = if augment disable then 1 otherwise color * spatial, where
 # color = color.n_transforms+1 if color.enabled else 1

@@ -23,6 +23,8 @@ class SN8DataModule(pl.LightningDataModule):
         self.hue = cfg.augment.color.hue
         self.data_to_load = ["preimg", "postimg", "flood"]
         self.exclude_files = set(cfg.exclude_files)
+        self.random_crop = cfg.image_random_crop.enabled
+        self.crop_size = (cfg.image_random_crop.crop_height, cfg.image_random_crop.crop_width)
 
     def setup(self, stage):
         self.train_dataset = SN8Dataset(csv_filename=self.train_csv,
@@ -35,8 +37,15 @@ class SN8DataModule(pl.LightningDataModule):
                                         contrast=self.contrast,
                                         saturation=self.saturation,
                                         hue=self.hue,
-                                        exclude_files=self.exclude_files)
-        self.val_dataset = SN8Dataset(self.val_csv, data_to_load=self.data_to_load, exclude_files=self.exclude_files)
+                                        exclude_files=self.exclude_files,
+                                        random_crop=self.random_crop,
+                                        crop_size=self.crop_size)
+
+        self.val_dataset = SN8Dataset(self.val_csv,
+                                      data_to_load=self.data_to_load,
+                                      exclude_files=self.exclude_files,
+                                      random_crop=self.random_crop,
+                                      crop_size=self.crop_size)
 
 
     def train_dataloader(self):
