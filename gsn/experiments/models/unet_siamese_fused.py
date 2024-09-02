@@ -24,7 +24,8 @@ class UnetSiameseFused(nn.Module):
             decoder_channels: List[int] = (256, 128, 64, 32, 16),
             in_channels: int = 3,
             fuse='cat',
-            unet_plus_plus: bool = False
+            unet_plus_plus: bool = False,
+            global_context: bool = False
     ):
         super().__init__()
 
@@ -38,6 +39,7 @@ class UnetSiameseFused(nn.Module):
             attention = {'enabled': False}
 
         self.unet_plus_plus = unet_plus_plus
+        self.global_context = global_context
 
         self.encoder = get_encoder(
             encoder_name,
@@ -115,8 +117,15 @@ class UnetSiameseFused(nn.Module):
         num_classes = 5
         if distance_transform['enabled']:
             num_classes += 4
+
+        segmentation_head_in_channels = decoder_channels[-1]
+        if self.global_context:
+            self.global_avg_pool = nn.AdaptiveAvgPool2d((1, 1))
+            self.context_conv = nn.Conv2d(self.encoder.out_channels[-1], 32, kernel_size=1)
+            segmentation_head_in_channels = segmentation_head_in_channels + 32
+
         self.segmentation_head = SegmentationHead(
-            in_channels=decoder_channels[-1],
+            in_channels=segmentation_head_in_channels,
             out_channels=num_classes, activation=None, kernel_size=3)
 
         if flood_classification['enabled']:
@@ -154,6 +163,15 @@ class UnetSiameseFused(nn.Module):
                 final_features.append(enc_fusion)
 
         decoder_output = self.decoder(*final_features)
+
+        if self.global_context:
+            global_context = self.global_avg_pool(final_features[-1])
+            global_context = self.context_conv(global_context)
+
+            _, _, h, w = decoder_output.shape
+            global_context_expanded = global_context.expand(-1, -1, h, w)
+            decoder_output = torch.cat((decoder_output, global_context_expanded), dim=1)
+
         out_segmentation = self.segmentation_head(decoder_output)
 
         if self.classification_head is not None:

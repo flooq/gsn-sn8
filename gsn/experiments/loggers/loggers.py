@@ -11,6 +11,7 @@ def get_logger(cfg: DictConfig):
     tags = [
         cfg.model.name if cfg.model.name != 'siamese_fused' or not cfg.model.unet_plus_plus else 'siamese++_fused',
         cfg.model.encoder_name if cfg.model.name != 'baseline' else None,
+        'global_context' if cfg.model.name == 'siamese_fused' and cfg.model.global_context else None,
         'combined_loss' if cfg.loss.name == 'combined' else cfg.loss.name,
         'aug' if cfg.augment.enabled else None,
         'aug_color' if cfg.augment.color.enabled else None,

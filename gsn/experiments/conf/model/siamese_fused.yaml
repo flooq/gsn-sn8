@@ -4,3 +4,4 @@ encoder_weights: imagenet
 decoder_use_batchnorm: true
 fuse: cat
 unet_plus_plus: false # only witch batch_size=1
+global_context: true
