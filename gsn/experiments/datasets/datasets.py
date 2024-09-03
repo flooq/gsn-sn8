@@ -5,7 +5,6 @@ import random
 from itertools import combinations_with_replacement
 from typing import List, Tuple
 import cv2
-from albumentations import RandomCrop
 from skimage import io
 import numpy as np
 import torch
@@ -68,7 +67,6 @@ class SN8Dataset(Dataset):
         self.exclude_files = exclude_files
         self.img_resize = Resize(*out_img_size)  # default interpolation method is linear
         self.mask_resize = Resize(*out_img_size, interpolation=cv2.INTER_NEAREST)
-        self.f_random_crop = RandomCrop(*crop_size)
         self.augment = augment
         if augment:
             if augment_color:
@@ -141,13 +139,15 @@ class SN8Dataset(Dataset):
                 images[data_type] = image
 
         if self.random_crop:
-            cropped_images = self.f_random_crop(image=images['preimg'])
-            crop_bbox = cropped_images['boxes'][0] if 'boxes' in cropped_images else (0, 0, self.crop_size[0], self.crop_size[1])
-            crop_x, crop_y, crop_w, crop_h = crop_bbox
+            original_height, original_width = self.out_img_size
+            crop_height, crop_width = self.crop_size
+            crop_x_min = np.random.randint(0, original_width - crop_width + 1)
+            crop_y_min = np.random.randint(0, original_height - crop_height + 1)
+
             for key in images.keys():
                 image = images[key]
                 if image is not None:
-                    images[key] = image[crop_y:crop_y+crop_h, crop_x:crop_x+crop_w]
+                    images[key] = image[crop_y_min:crop_y_min + crop_height, crop_x_min:crop_x_min + crop_width]
 
         for data_type in self.all_data_types:
             if data_type in images:

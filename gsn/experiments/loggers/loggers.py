@@ -12,10 +12,11 @@ def get_logger(cfg: DictConfig):
         cfg.model.name if cfg.model.name != 'siamese_fused' or not cfg.model.unet_plus_plus else 'siamese++_fused',
         cfg.model.encoder_name if cfg.model.name != 'baseline' else None,
         'global_context' if cfg.model.name == 'siamese_fused' and cfg.model.global_context else None,
+        cfg.model.fuse if cfg.model.name == 'siamese_fused'  else None,
         'combined_loss' if cfg.loss.name == 'combined' else cfg.loss.name,
         'aug' if cfg.augment.enabled else None,
-        'aug_color' if cfg.augment.color.enabled else None,
-        'aug_spatial' if cfg.augment.spatial.enabled else None,
+        'aug_color' if cfg.augment.enabled and cfg.augment.color.enabled else None,
+        'aug_spatial' if cfg.augment.enabled and cfg.augment.spatial.enabled else None,
         f"aug_factor={_calculate_number_of_pictures(cfg.augment)}" if cfg.augment.enabled else None,
         'dist_trans' if cfg.distance_transform.enabled and not cfg.distance_transform.inverted else None,
         'dist_trans_inv' if cfg.distance_transform.enabled and cfg.distance_transform.inverted else None,
@@ -31,6 +32,7 @@ def get_logger(cfg: DictConfig):
         f"batch={cfg.batch_size}",
         f"lr_step={cfg.scheduler.step_size}" if cfg.scheduler.name == 'step_lr' else None,
         f"lr_gamma={cfg.scheduler.gamma}" if cfg.scheduler.name == 'step_lr' else None,
+        f"crop_img={cfg.image_random_crop.crop_height}" if cfg.image_random_crop.enabled else None
     ]
     tags = [tag for tag in tags if tag is not None]
 
