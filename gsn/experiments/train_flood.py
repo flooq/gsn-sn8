@@ -35,7 +35,7 @@ def train_flood(cfg: DictConfig) -> None:
 
     trainer = pl.Trainer(
         **trainer_const_params,
-        #precision=16,
+        precision='16-mixed',
         accumulate_grad_batches=cfg.accumulate_grad_batches,  # Simulate a larger batch size by accumulating gradients
         max_epochs=cfg.max_epochs,
         default_root_dir=cfg.output_dir,
