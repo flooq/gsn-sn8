@@ -48,7 +48,7 @@ class UnetSiameseFused(nn.Module):
             weights=encoder_weights,
         )
 
-        if attention.enabled:
+        if attention['enabled']:
             self.decoder = MAnetDecoder(
                 encoder_channels=self.encoder.out_channels,
                 decoder_channels=decoder_channels,
@@ -190,7 +190,7 @@ class UnetSiameseFused(nn.Module):
 
 
 if __name__ == "__main__":
-    model = UnetSiameseFused(encoder_name="resnet50")
+    model = UnetSiameseFused(encoder_name="resnet50", distance_transform={'enabled': True}, global_context=True)
     print(model)
 
     model.eval()
