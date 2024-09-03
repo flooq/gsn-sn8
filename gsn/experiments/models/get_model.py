@@ -24,8 +24,10 @@ def get_model(cfg: DictConfig):
     classname = models[cfg.model.name]
     filtered_data = _filter_dict_for_constructor(classname, cfg.model)
     print(f"Model {cfg.model.name} with parameters {filtered_data}")
-
-    return classname(distance_transform=cfg.distance_transform,
+    if cfg.model.name == 'baseline':
+        return classname(**filtered_data)
+    else:
+        return classname(distance_transform=cfg.distance_transform,
                      flood_classification=cfg.flood_classification,
                      attention=cfg.attention,
                      **filtered_data)
