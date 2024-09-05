@@ -3,7 +3,7 @@
 
 defaults:
   - _self_
-  - loss: focal # loss in (bce, combined, cross_entropy, dice, focal, lovasz)
+  - loss: focal # loss in (bce, combined, cross_entropy, dice, focal, lovasz, focal_lovasz)
   - model: siamese_fused # model in (baseline, siamese, siamese_fused)
   - scheduler: step_lr # scheduler in (step_lr)
   - logger: neptune # logger in (csv, neptune)

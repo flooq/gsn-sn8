@@ -1,0 +1,10 @@
+name: focal_lovasz
+cross_entropy:
+  weight: 0.0
+dice:
+  weight: 0.0
+focal:
+  weight: 0.50
+  gamma: 2
+lovasz:
+  weight: 0.50

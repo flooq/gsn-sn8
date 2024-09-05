@@ -19,7 +19,8 @@ def get_loss(cfg: DictConfig):
         'cross_entropy': CrossEntropy,
         'dice': Dice,
         'focal': Focal,
-        'lovasz': Lovasz
+        'lovasz': Lovasz,
+        'focal_lovasz': CombinedLoss
     }
 
     if cfg.loss.name not in losses:
