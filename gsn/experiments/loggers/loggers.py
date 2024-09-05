@@ -31,8 +31,7 @@ def get_logger(cfg: DictConfig):
         f"lr={cfg.learning_rate}",
         f"batch={cfg.batch_size}",
         f"lr_step={cfg.scheduler.step_size}" if cfg.scheduler.name == 'step_lr' else None,
-        f"lr_gamma={cfg.scheduler.gamma}" if cfg.scheduler.name == 'step_lr' else None,
-        f"crop_img={cfg.image_random_crop.crop_height}" if cfg.image_random_crop.enabled else None
+        f"lr_gamma={cfg.scheduler.gamma}" if cfg.scheduler.name == 'step_lr' else None
     ]
     tags = [tag for tag in tags if tag is not None]
 

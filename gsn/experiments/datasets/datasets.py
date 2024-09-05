@@ -20,7 +20,6 @@ class SN8Dataset(Dataset):
                  data_to_load: List[str] = ("preimg", "postimg", "building", "road", "roadspeed", "flood"),
                  img_size: Tuple[int, int] = (1300, 1300),
                  out_img_size: Tuple[int, int] = (1280, 1280),
-                 crop_size: Tuple[int, int] = (512, 512),
                  random_crop: bool = False,
                  augment: bool = False,
                  augment_color: bool = True,
@@ -58,7 +57,6 @@ class SN8Dataset(Dataset):
         self.mask_data_types = ("building", "road", "roadspeed", "flood")
         self.img_size = img_size
         self.out_img_size = out_img_size
-        self.crop_size = crop_size
         self.random_crop = random_crop
         self.data_to_load = data_to_load
         self.files = []
@@ -140,14 +138,17 @@ class SN8Dataset(Dataset):
 
         if self.random_crop:
             original_height, original_width = self.out_img_size
-            crop_height, crop_width = self.crop_size
-            crop_x_min = np.random.randint(0, original_width - crop_width + 1)
-            crop_y_min = np.random.randint(0, original_height - crop_height + 1)
+            crop_height, crop_width = original_height//2, original_width//2
+            starting_points = [(0, 0),
+                               (crop_height, 0),
+                               (0, crop_width),
+                               (crop_height, crop_width)]
+            x, y = starting_points[np.random.randint(0, 4)]
 
             for key in images.keys():
                 image = images[key]
                 if image is not None:
-                    images[key] = image[crop_y_min:crop_y_min + crop_height, crop_x_min:crop_x_min + crop_width]
+                    images[key] = image[y:y + crop_height, x:x + crop_width]
 
         for data_type in self.all_data_types:
             if data_type in images:
