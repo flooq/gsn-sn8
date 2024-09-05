@@ -43,14 +43,12 @@ class SN8DataModule(pl.LightningDataModule):
 
         self.val_dataset = SN8Dataset(self.val_csv,
                                       data_to_load=self.data_to_load,
-                                      exclude_files=self.exclude_files,
-                                      random_crop=self.random_crop,
-                                      crop_size=self.crop_size)
+                                      exclude_files=self.exclude_files) # no crop during validation
 
 
     def train_dataloader(self):
         return torch.utils.data.DataLoader(self.train_dataset, shuffle=True, num_workers=4, batch_size=self.batch_size)
 
     def val_dataloader(self):
-        return torch.utils.data.DataLoader(self.val_dataset, num_workers=4, batch_size=self.batch_size)
+        return torch.utils.data.DataLoader(self.val_dataset, num_workers=4, batch_size=1) # always 1
 

@@ -16,11 +16,12 @@ from models.get_model import load_model_from_checkpoint
 #   out_dir_name = 'vis_flood_eval_fig'
 # augment option has been added only to check if augmentation works
 @click.command()
-@click.option("--hydra_train_flood_out_dir", type=str, required=True)
-@click.option("--checkpoint_file", type=str, required=True)
-@click.option("--out_dir_name", type=str, required=True)
+#@click.option("--hydra_train_flood_out_dir", type=str, required=True, default='/home/pawel/projects/flooq/gsn-sn8/outputs/gsn/train_flood/2024-08-27/05-54-25-GSN-204')
+@click.option("--hydra_train_flood_out_dir", type=str, required=True, default='/home/pawel/projects/flooq/gsn-sn8/outputs/gsn/train_flood/2024-09-02/05-56-12-GSN-236')
+@click.option("--checkpoint_file", type=str, required=True, default ='best-iou-checkpoint-epoch=130-val_iou=0.00.ckpt')
+@click.option("--out_dir_name", type=str, required=True, default = 'flood_eval_fig_2')
 @click.option("--blending_color", type=bool, default=True)
-@click.option("--n_images", type=int, default=5)
+@click.option("--n_images", type=int, default=15)
 @click.option("--augment", type=bool, default=False)
 def visualize(hydra_train_flood_out_dir, checkpoint_file, out_dir_name, blending_color, n_images, augment):
     cfg = _load_cfg_from_experiment(hydra_train_flood_out_dir)
