@@ -1,12 +1,17 @@
 import albumentations as A
 
 class GeometricTransform:
-    def __init__(self, vertical_flip: bool, horizontal_flip: bool, transpose: bool):
+    def __init__(self,
+                 vertical_flip: bool,
+                 horizontal_flip: bool,
+                 transpose: bool,
+                 rotate: int):
+
         self.transform = A.Compose(
-            [
-                A.VerticalFlip(p=int(vertical_flip)),
-                A.HorizontalFlip(p=int(horizontal_flip)),
-                A.Transpose(p=int(transpose))
+            [    A.Rotate(limit=(rotate,rotate), p=1 if rotate !=0 else 0),
+                 A.VerticalFlip(p=int(vertical_flip)),
+                 A.HorizontalFlip(p=int(horizontal_flip)),
+                 A.Transpose(p=int(transpose))
             ]
         )
 

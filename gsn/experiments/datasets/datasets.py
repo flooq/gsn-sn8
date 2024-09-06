@@ -2,7 +2,6 @@ import csv
 import copy
 import os
 import random
-from itertools import combinations_with_replacement
 from typing import List, Tuple
 import cv2
 from skimage import io
@@ -10,6 +9,7 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset
 from albumentations.augmentations.geometric.resize import Resize
+from itertools import product
 
 from datasets.augmentations import GeometricTransform, ColorTransform
 
@@ -29,6 +29,10 @@ class SN8Dataset(Dataset):
                  contrast: float = 0.15,
                  saturation: int = 20,
                  hue: int = 20,
+                 rotate: List[int] = None,
+                 vertical_flip: float = 0.5,
+                 horizontal_flip: float = 0.5,
+                 transpose: float = 0.5,
                  exclude_files=None):
         """ pytorch dataset for spacenet-8 data. loads images from a csv that contains filepaths to the images
 
@@ -77,8 +81,13 @@ class SN8Dataset(Dataset):
                 self.color_augmentations = [lambda x: x]
 
             if augment_spatial:
-                # combinations contain identity
-                self.spatial_augmentations = [GeometricTransform(*c) for c in combinations_with_replacement((False, True), 3)]
+                vertical_flip_options = [False, True] if vertical_flip else [False]
+                horizontal_flip_options = [False, True] if horizontal_flip else [False]
+                transpose_options = [False, True] if transpose else [False]
+                rotate_options = [0] if rotate is None else rotate
+                all_combinations = product(vertical_flip_options, horizontal_flip_options, transpose_options, rotate_options)
+                self.spatial_augmentations = ([lambda x: x] +
+                                              [ GeometricTransform(v, h, t, r)  for v, h, t, r in all_combinations])
             else:
                 self.spatial_augmentations = [lambda x: x]
 
@@ -127,8 +136,6 @@ class SN8Dataset(Dataset):
         data_dict = self.files[index]
         images = {}
         returned_data = []
-        spatial_aug = random.choice(self.spatial_augmentations) if self.augment else None
-        color_aug = random.choice(self.color_augmentations) if self.augment else None
         for data_type in self.all_data_types:
             filepath = data_dict[data_type]
             if filepath is not None:
@@ -150,6 +157,8 @@ class SN8Dataset(Dataset):
                 if image is not None:
                     images[key] = image[y:y + crop_height, x:x + crop_width]
 
+        spatial_aug = random.choice(self.spatial_augmentations) if self.augment else None
+        color_aug = random.choice(self.color_augmentations) if self.augment else None
         for data_type in self.all_data_types:
             if data_type in images:
                 image = images[data_type]

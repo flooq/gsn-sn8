@@ -33,18 +33,22 @@ image_random_crop: # used only during training, if disabled then img_size = (128
 
 # number of pictures = if augment disable then 1 otherwise color * spatial, where
 # color = color.n_transforms+1 if color.enabled else 1
-# spatial = 8 if spatial.enabled else 1
+# spatial = if spatial disabled then 1 otherwise calculated based on vertical_flip, horizontal_flip, transpose and rotate
 augment:
   enabled: true
   color:
     enabled: true
-    n_transforms: 4 # should be greater than 0
+    n_transforms: 7
     brightness: 0.15
     contrast: 0.15
     saturation: 20
     hue: 20
-  spatial: # always n_transforms = 8
+  spatial:
     enabled: true
+    vertical_flip: true
+    horizontal_flip: true
+    transpose: true
+    rotate: [-45,0,45]
 
 # distance transform (baseline - not supported and ignored)
 distance_transform:

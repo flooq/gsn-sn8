@@ -54,6 +54,19 @@ def _calculate_number_of_pictures(augment_config):
         color_transforms = augment_config['color']['n_transforms'] + 1
     else:
         color_transforms = 1
-    spatial_transforms = 8 if augment_config['spatial']['enabled'] else 1
+
+    spatial_transforms = 1
+    if augment_config['spatial']['enabled']:
+        if augment_config['spatial']['vertical_flip']:
+            spatial_transforms = spatial_transforms * 2
+        if augment_config['spatial']['horizontal_flip']:
+            spatial_transforms = spatial_transforms * 2
+        if augment_config['spatial']['transpose']:
+            spatial_transforms = spatial_transforms * 2
+        rotate = augment_config['spatial']['rotate']
+        if rotate is not None and len(rotate) > 0:
+            spatial_transforms = spatial_transforms * len(rotate)
+        spatial_transforms += 1
+
     number_of_pictures = color_transforms * spatial_transforms
     return number_of_pictures

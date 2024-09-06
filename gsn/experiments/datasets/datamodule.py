@@ -16,11 +16,17 @@ class SN8DataModule(pl.LightningDataModule):
         self.augment = cfg.augment.enabled
         self.augment_color = cfg.augment.color.enabled
         self.augment_spatial = cfg.augment.spatial.enabled
+        # color
         self.n_color_transforms = cfg.augment.color.n_transforms
         self.brightness = cfg.augment.color.brightness
         self.contrast = cfg.augment.color.contrast
         self.saturation = cfg.augment.color.saturation
         self.hue = cfg.augment.color.hue
+        # spatial
+        self.rotate = cfg.augment.spatial.rotate
+        self.vertical_flip = cfg.augment.spatial.vertical_flip
+        self.horizontal_flip = cfg.augment.spatial.horizontal_flip
+        self.transpose = cfg.augment.spatial.transpose
         self.data_to_load = ["preimg", "postimg", "flood"]
         self.exclude_files = set(cfg.exclude_files)
         self.random_crop = cfg.image_random_crop.enabled
@@ -36,6 +42,10 @@ class SN8DataModule(pl.LightningDataModule):
                                         contrast=self.contrast,
                                         saturation=self.saturation,
                                         hue=self.hue,
+                                        rotate=self.rotate,
+                                        vertical_flip=self.vertical_flip,
+                                        horizontal_flip=self.horizontal_flip,
+                                        transpose=self.transpose,
                                         exclude_files=self.exclude_files,
                                         random_crop=self.random_crop)
 
