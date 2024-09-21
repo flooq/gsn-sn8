@@ -5,8 +5,8 @@ from metrics.metrics import get_val_metrics
 from metrics.metrics import get_train_metrics
 from torch import nn
 
-from experiments.distance_transform.weighted_distance_transform import WeightedDistanceTransform
-from experiments.schedulers.get_scheduler import get_scheduler
+from distance_transform.weighted_distance_transform import WeightedDistanceTransform
+from schedulers.get_scheduler import get_scheduler
 
 
 class FloodTrainer(pl.LightningModule):

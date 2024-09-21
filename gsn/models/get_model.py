@@ -5,9 +5,9 @@ import os
 import torch
 from omegaconf import DictConfig
 
-from experiments.models.baseline_unet import UNetSiameseBaseline
-from experiments.models.unet_siamese import UnetSiamese
-from experiments.models.unet_siamese_fused import UnetSiameseFused
+from models.baseline_unet import UNetSiameseBaseline
+from models.unet_siamese import UnetSiamese
+from models.unet_siamese_fused import UnetSiameseFused
 
 
 def get_model(cfg: DictConfig):

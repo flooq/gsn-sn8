@@ -3,8 +3,8 @@ import env
 import click
 from omegaconf import OmegaConf
 
-from experiments.datasets.datasets import SN8Dataset
-from experiments.visualize.visualize import save_eval_fig_on_disk
+from datasets.datasets import SN8Dataset
+from visualize.visualize import save_eval_fig_on_disk
 from models.get_model import load_model_from_checkpoint
 
 # Options:

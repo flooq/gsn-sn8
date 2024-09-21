@@ -1,8 +1,8 @@
 from torch import nn
 
-from experiments.loss.dice_loss import Dice
-from experiments.loss.focal_loss import Focal
-from experiments.loss.lovasz_loss import Lovasz
+from loss.dice_loss import Dice
+from loss.focal_loss import Focal
+from loss.lovasz_loss import Lovasz
 
 
 class CombinedLoss(nn.Module):

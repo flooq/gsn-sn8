@@ -2,13 +2,13 @@ import inspect
 
 from omegaconf import DictConfig
 
-from experiments.loss.bce_loss import BCE
-from experiments.loss.regularization_loss_decorator import RegularizationLossDecorator
-from experiments.loss.combined_loss import CombinedLoss
-from experiments.loss.cross_entropy_loss import CrossEntropy
-from experiments.loss.dice_loss import Dice
-from experiments.loss.focal_loss import Focal
-from experiments.loss.lovasz_loss import Lovasz
+from loss.bce_loss import BCE
+from loss.regularization_loss_decorator import RegularizationLossDecorator
+from loss.combined_loss import CombinedLoss
+from loss.cross_entropy_loss import CrossEntropy
+from loss.dice_loss import Dice
+from loss.focal_loss import Focal
+from loss.lovasz_loss import Lovasz
 
 
 def get_loss(cfg: DictConfig):

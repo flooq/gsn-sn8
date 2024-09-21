@@ -1,7 +1,7 @@
 from omegaconf import DictConfig
 from pytorch_lightning.callbacks import EarlyStopping, TQDMProgressBar
 
-from experiments.callbacks.model_checkpoints import get_model_checkpoints
+from callbacks.model_checkpoints import get_model_checkpoints
 
 
 def get_callbacks(cfg: DictConfig):

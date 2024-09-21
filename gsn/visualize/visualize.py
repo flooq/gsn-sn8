@@ -6,7 +6,7 @@ import cv2
 from omegaconf import DictConfig
 from torch.utils.data import Dataset
 
-from experiments.datasets.datasets import SN8Dataset
+from datasets.datasets import SN8Dataset
 from neptune.types import File
 
 COLORS_BLENDING = {

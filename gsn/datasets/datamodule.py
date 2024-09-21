@@ -3,7 +3,7 @@ import torch
 import torch.nn
 from omegaconf import DictConfig
 
-from experiments.datasets.datasets import SN8Dataset
+from datasets.datasets import SN8Dataset
 
 
 class SN8DataModule(pl.LightningDataModule):
