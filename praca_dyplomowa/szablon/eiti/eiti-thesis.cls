@@ -450,6 +450,19 @@
         \ifnum \pdf@strcmp{\@lang}{english} = 0
             student record book number \@album \\
         \fi
+        % Drugi autor
+        \ifx\secondauthor\empty\else
+            \vspace{10pt} % Odstęp między autorami
+            \LARGE
+            \secondauthor \\
+            \normalsize
+            \ifnum \pdf@strcmp{\@lang}{polish} = 0
+            Numer~albumu \secondalbum \\
+            \fi
+            \ifnum \pdf@strcmp{\@lang}{english} = 0
+            student record book number \secondalbum \\
+            \fi
+        \fi
         \hfill \break
         \hfill \break
         \ifnum \pdf@strcmp{\@lang}{polish} = 0
