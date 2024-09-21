@@ -9,6 +9,7 @@ Rozwiązanie zadania konkursowego zostało w całości zaimplementowane w język
 \item \texttt{neptune} do monitorowania przebiegu treningu i ewaluacji.
 \end{enumerate}
 \subsection{Zbiór danych}
+Zbiór danych udostępniony przez organizatorów konkursu składa się ze zdjęć satelitarnych w formacie TIFF, podzielonych na zdjęcia wykonane przed i po katastrofie, adnotacji budynków i dróg w formacie GeoJSON oraz plików CSV zawierających przypisanie adnotacji do zdjęć. Podział danych na zbiór treningowy i testowy jest zadany z góry.
 Do wstępnej obróbki zbioru danych wykorzystano skrypty dostarczone przez organizatorów konkursu razem z rozwiązaniem \textit{baseline} w niezmienionej postaci. Przetwarzają one adnotacje w formacie GeoJSON na obrazy w formacie TIFF i rozdzielczości identycznej jak odpowiadające im zdjęcia. Dla jednej pary zdjęć (przed i po katastrofie) generowane są maksymalnie cztery obrazy:
 \begin{enumerate}
 \item Jednokanałowa maska budynków o wartościach $0, 1$.
@@ -23,7 +24,7 @@ Po przetworzeniu zbiór danych zawierał 801 par zdjęć z kompletem masek dróg
 \includegraphics[width=7cm,height=7cm]{rysunki/10500500C4DD7000_0_30_69_POST.png}
 \caption[Wizualizacja danych]{Przykładowa para zdjęć ze zbioru danych z adnotacjami. Wszystkie obiekty na zdjęciu po prawej są sklasyfikowane jako zniszczone.}
 \end{figure}
-Zdjęcia sprzed katastrofy miały rozdzielczość $1300\times 1300$ pikseli, natomiast zdjęcia po katastrofie miały różne rozdzielczości. Aby efektywnie używać ich jako wsadu do modeli o różnych architekturach, zaimplementowano skalowanie wszystkich obrazów i masek po ich wczytaniu do tej samej rozdzielczości. W eksperymentach ustalono tę rozdzielczość na $1024\times 1024$ piksele.
+Zdjęcia sprzed katastrofy miały rozdzielczość $1300\times 1300$ pikseli, natomiast zdjęcia po katastrofie miały różne rozdzielczości. Aby efektywnie używać ich jako wsadu do modeli o różnych architekturach, zaimplementowano skalowanie wszystkich obrazów i masek po ich wczytaniu do tej samej rozdzielczości. W eksperymentach ustalono tę rozdzielczość na $1280\times 1280$ piksele.
 \subsection{Augmentacja danych}
 Ze względu na mały rozmiar zbioru danych, kluczowe znaczenie dla rozwiązania miała augmentacja danych treningowych. 
 \subsection{Trening i ewaluacja}
